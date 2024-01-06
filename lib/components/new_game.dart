@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/settings_row.dart';
 import 'package:darttoernooi/classes/setting.dart';
 import 'package:darttoernooi/components/enter_players.dart';
+import 'package:darttoernooi/defs.dart';
 
 class NewGame extends StatefulWidget {
   const NewGame({super.key});
@@ -71,7 +72,7 @@ class _NewGameState extends State<NewGame> {
       appBar: AppBar(
         title: const Text("Nieuw spel"),
         leading: IconButton(
-          icon: Icon(Icons.home),
+          icon: const Icon(Icons.home),
           onPressed: () =>
               Navigator.popUntil(context, (route) => route.isFirst),
         ),
@@ -92,7 +93,7 @@ class _NewGameState extends State<NewGame> {
                 borderRadius: BorderRadius.circular(15),
                 child: Container(
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black38),
+                      border: Border.all(color: cardOutlineColor),
                       borderRadius: BorderRadius.circular(15)),
                   padding: const EdgeInsets.fromLTRB(100, 50, 100, 50),
                   child: Column(
