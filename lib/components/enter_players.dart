@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/setting.dart';
+import 'package:darttoernooi/defs.dart';
+import 'package:darttoernooi/components/game.dart';
 
 class EnterPlayers extends StatefulWidget {
   const EnterPlayers(
@@ -19,6 +21,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
   final _formKey = GlobalKey<FormState>();
   List<String> players = [];
   List<int> indexList = [];
+
   @override
   void initState() {
     players.clear();
@@ -53,7 +56,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
                 borderRadius: BorderRadius.circular(15),
                 child: Container(
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black38),
+                      border: Border.all(color: cardOutlineColor),
                       borderRadius: BorderRadius.circular(15)),
                   padding: const EdgeInsets.fromLTRB(80, 50, 80, 50),
                   child: Column(children: [
@@ -111,12 +114,18 @@ class _EnterPlayersState extends State<EnterPlayers> {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
 
-                                players.shuffle();
-                                print(players);
-                                print(
-                                    "Amount of players: ${widget.numberOfPlayers}");
-                                print(
-                                    "Amount of poules: ${widget.numberOfPoules}");
+                                Navigator.pushAndRemoveUntil(
+                                    context,
+                                    PageRouteBuilder(
+                                        pageBuilder:
+                                            (context, animation1, animation2) =>
+                                                Game(
+                                                  playersNames: players,
+                                                  settings: widget.settings,
+                                                  numberOfPoules:
+                                                      widget.numberOfPoules,
+                                                )),
+                                    (route) => route.isFirst);
                               }
                             },
                             child: const Text("Spel maken"))
