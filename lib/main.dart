@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/components/new_game.dart';
+import 'package:darttoernooi/defs.dart';
 
 void main() {
   runApp(const App());
@@ -17,6 +18,7 @@ class App extends StatelessWidget {
           seedColor: Colors.red,
           brightness: Brightness.dark,
           surface: const Color.fromRGBO(92, 0, 0, 1),
+          background: const Color.fromRGBO(24, 24, 24, 1),
         ),
         useMaterial3: true,
       ),
@@ -46,7 +48,7 @@ class StartScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black38),
+                    border: Border.all(color: cardOutlineColor),
                     borderRadius: BorderRadius.circular(15)),
                 padding: const EdgeInsets.fromLTRB(100, 50, 100, 50),
                 child: Column(
