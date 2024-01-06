@@ -3,7 +3,9 @@ import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/poule.dart';
 import 'package:darttoernooi/classes/setting.dart';
 import 'package:uuid/uuid.dart';
-import 'package:darttoernooi/components/game_widgets/poule_rankings/poule_rankings.dart';
+import 'package:darttoernooi/defs.dart';
+import 'package:darttoernooi/components/game_widgets/poule_wrapper.dart';
+import 'package:darttoernooi/components/game_widgets/poule_sub_widgets/poule_rankings.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -32,7 +34,7 @@ class _GameState extends State<Game> {
 
   void generatePoules() {
     for (int i = 0; i < widget.numberOfPoules; i++) {
-      poules.add(Poule(pouleNum: pouleNums[i], players: []));
+      poules.add(Poule(pouleNum: pouleNums[i]));
     }
     double playersPerPoule = widget.playersNames.length / widget.numberOfPoules;
     int playersPerPouleAbs = playersPerPoule.floor();
@@ -73,8 +75,25 @@ class _GameState extends State<Game> {
                 Navigator.popUntil(context, (route) => route.isFirst),
             icon: const Icon(Icons.home),
           )),
-      body: Column(
-        children: [Row()],
+      body: Row(
+        children: [
+          const SizedBox(
+            width: 20,
+          ),
+          Row(
+              children: poules.map(
+            (Poule poule) {
+              return Row(
+                children: [
+                  PouleWrapper(poule: poule),
+                  const SizedBox(
+                    width: 20,
+                  )
+                ],
+              );
+            },
+          ).toList()),
+        ],
       ),
     );
   }

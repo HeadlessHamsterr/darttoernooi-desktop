@@ -1,40 +1,44 @@
-import 'package:flutter/material.dart';
 import 'package:calc/calc.dart';
 import 'package:darttoernooi/classes/player.dart';
+import 'package:darttoernooi/classes/player_notifier.dart';
 
 class Poule {
   final String pouleNum;
-  List<Player> players = [];
-  List<Player> rankings = [];
+  PlayerNotifier players = PlayerNotifier();
+  PlayerNotifier rankings = PlayerNotifier();
   List<Player> tiedPlayers = [];
   late Player winner;
   late Player secondPlace;
   late int numGames;
 
-  Poule({required this.pouleNum, required this.players});
+  Poule({required this.pouleNum});
 
   void updatePlayers(List<Player> newPlayers) {
-    players = newPlayers;
+    players.update(newPlayers);
+    reloadRankings();
   }
 
   void addPlayer(Player player) {
-    players.add(player);
+    List<Player> lastPlayers = List.from(players.players);
+    lastPlayers.add(player);
+    players.update(lastPlayers);
+    reloadRankings();
   }
 
   void calcNumGames() {
-    if (players.length == 2) {
+    if (players.players.length == 2) {
       numGames = 1;
     } else {
-      numGames =
-          (factorial(players.length) / (2 * factorial(players.length - 2)))
-              .floor();
+      numGames = (factorial(players.players.length) /
+              (2 * factorial(players.players.length - 2)))
+          .floor();
     }
   }
 
   void reloadRankings() {
-    rankings = List.from(players);
+    List<Player> tempPlayers = List.from(players.players);
 
-    rankings.sort((player1, player2) {
+    tempPlayers.sort((player1, player2) {
       if (player1.legsWon != player2.legsWon) {
         return player1.legsWon.compareTo(player2.legsWon) *
             -1; //Result is inverted, because the default sorting method is smallest first, we want biggest first.
@@ -50,5 +54,7 @@ class Poule {
         return 0; //All metrics are equal, for now keep ranking the same. Later might implement a random sort.
       }
     });
+
+    rankings.update(tempPlayers);
   }
 }

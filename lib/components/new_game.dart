@@ -254,7 +254,7 @@ class _NewGameState extends State<NewGame> {
                                           content: const Text(
                                               "Er moeten minimaal 2 spelers meedoen."),
                                         ));
-                              } else if (numberOfPoules > 5) {
+                              } else if (numberOfPoules > 4) {
                                 showDialog(
                                     context: context,
                                     builder: (context) => AlertDialog(
@@ -267,7 +267,7 @@ class _NewGameState extends State<NewGame> {
                                           title: Text(
                                               "$numberOfPoules poules is te veel."),
                                           content: const Text(
-                                              "Er kunnen maximaal 5 poules gemaakt worden."),
+                                              "Er kunnen maximaal 4 poules gemaakt worden."),
                                         ));
                               } else if (numberOfPoules < 1) {
                                 showDialog(
@@ -283,7 +283,7 @@ class _NewGameState extends State<NewGame> {
                                           content: const Text(
                                               "Je moet wel poules toevoegen"),
                                         ));
-                              } else if (numberOfPlayers / numberOfPoules > 4) {
+                              } else if (numberOfPlayers / numberOfPoules > 5) {
                                 showDialog(
                                     context: context,
                                     builder: (context) => AlertDialog(
@@ -296,7 +296,7 @@ class _NewGameState extends State<NewGame> {
                                           title: const Text(
                                               "Te veel spelers per poule."),
                                           content: Text(
-                                              "Er kunnen maar 4 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
+                                              "Er kunnen maar 5 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
                                         ));
                               } else if (numberOfPlayers / numberOfPoules < 2) {
                                 showDialog(
