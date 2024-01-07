@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/setting.dart';
 import 'package:darttoernooi/defs.dart';
-import 'package:darttoernooi/components/game.dart';
+import 'package:darttoernooi/components/game_screen.dart';
 
 class EnterPlayers extends StatefulWidget {
   const EnterPlayers(

@@ -5,7 +5,7 @@ import 'package:darttoernooi/classes/setting.dart';
 import 'package:uuid/uuid.dart';
 import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/game_widgets/poule_wrapper.dart';
-import 'package:darttoernooi/components/game_widgets/poule_sub_widgets/poule_rankings.dart';
+import 'package:darttoernooi/components/game_widgets/finals_wrapper.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -32,9 +32,13 @@ class _GameState extends State<Game> {
     generatePoules();
   }
 
+  void onPouleDone(Poule poule) {
+    setState(() {});
+  }
+
   void generatePoules() {
     for (int i = 0; i < widget.numberOfPoules; i++) {
-      poules.add(Poule(pouleNum: pouleNums[i]));
+      poules.add(Poule(pouleNum: pouleNums[i], onGameDone: onPouleDone));
     }
     double playersPerPoule = widget.playersNames.length / widget.numberOfPoules;
     int playersPerPouleAbs = playersPerPoule.floor();
@@ -62,6 +66,7 @@ class _GameState extends State<Game> {
     for (int i = 0; i < poules.length; i++) {
       poules[i].calcNumGames();
       poules[i].reloadRankings();
+      poules[i].generateGames();
     }
   }
 
@@ -75,25 +80,47 @@ class _GameState extends State<Game> {
                 Navigator.popUntil(context, (route) => route.isFirst),
             icon: const Icon(Icons.home),
           )),
-      body: Row(
-        children: [
-          const SizedBox(
-            width: 20,
-          ),
-          Row(
-              children: poules.map(
-            (Poule poule) {
-              return Row(
-                children: [
-                  PouleWrapper(poule: poule),
-                  const SizedBox(
-                    width: 20,
-                  )
-                ],
-              );
-            },
-          ).toList()),
-        ],
+      body: SingleChildScrollView(
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+            ),
+            Row(
+                children: poules.map(
+              (Poule poule) {
+                return Row(
+                  children: [
+                    PouleWrapper(poule: poule),
+                    const SizedBox(
+                      width: 20,
+                    )
+                  ],
+                );
+              },
+            ).toList()),
+            PhysicalModel(
+              color: Theme.of(context).colorScheme.background,
+              elevation: 20,
+              borderRadius: BorderRadius.circular(15),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    border: Border.all(color: cardOutlineColor),
+                    borderRadius: BorderRadius.circular(15)),
+                child: Column(
+                  children: [
+                    const Text("Winnaar"),
+                    Text(poules[0].winner.player.name),
+                    const Text("Tweede plaats"),
+                    Text(poules[0].secondPlace.player.name)
+                  ],
+                ),
+              ),
+            ),
+            const FinalsWrapper()
+          ],
+        ),
       ),
     );
   }

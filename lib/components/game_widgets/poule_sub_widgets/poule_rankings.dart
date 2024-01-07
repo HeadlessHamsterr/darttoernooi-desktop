@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/defs.dart';
-import 'package:darttoernooi/classes/player_notifier.dart';
-import 'package:darttoernooi/components/game_widgets/poule_sub_widgets/player_rank_row.dart';
+import 'package:darttoernooi/classes/players_notifier.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class PouleRankings extends StatefulWidget {
   const PouleRankings(
       {super.key, required this.rankings, required this.pouleNum});
-  final PlayerNotifier rankings;
+  final PlayersNotifier rankings;
   final String pouleNum;
 
   @override
@@ -44,7 +43,7 @@ class _PouleRankingsState extends State<PouleRankings> {
                   children: [
                     Text(
                       "Poule ${widget.pouleNum}",
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
                     const SizedBox(
                       height: 5,
@@ -55,7 +54,7 @@ class _PouleRankingsState extends State<PouleRankings> {
                             BorderSide(width: 1, color: Colors.grey),
                       ),
                       columnWidths: const <int, TableColumnWidth>{
-                        0: FixedColumnWidth(100),
+                        0: FixedColumnWidth(80),
                         1: FixedColumnWidth(50),
                         2: FixedColumnWidth(50),
                       },
@@ -86,8 +85,9 @@ class _PouleRankingsState extends State<PouleRankings> {
                             .map((int i) => TableRow(
                                   children: [
                                     Center(
-                                      child: Text(
+                                      child: AutoSizeText(
                                         widget.rankings.players[i].name,
+                                        maxLines: 1,
                                         style: TextStyle(
                                             color: i == 0
                                                 ? Colors.amber

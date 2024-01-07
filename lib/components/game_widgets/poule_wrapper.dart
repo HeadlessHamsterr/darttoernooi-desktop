@@ -25,7 +25,7 @@ class _PouleWrapperState extends State<PouleWrapper> {
         const SizedBox(
           height: 10,
         ),
-        PouleGame(poule: widget.poule)
+        PouleGame(games: widget.poule.games)
       ],
     );
   }
