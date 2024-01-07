@@ -1,5 +1,6 @@
 class Player {
   final String playerID;
+  String pouleNum = "";
   String name = "";
   int legsWon = 0;
   int legsLost = 0;
