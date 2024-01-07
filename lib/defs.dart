@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const Color cardOutlineColor = Color.fromARGB(95, 10, 10, 10);
+const Color cardBackground = Color.fromRGBO(36, 36, 36, 1);
 
 List<List<int>> getGameFormat(int amountOfPlayers) {
   List<List<int>> gameFormat = [[]];
