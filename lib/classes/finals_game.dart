@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 
 class FinalsGame {
   final String gameID;
-  final Player player1;
-  final Player player2;
+  Player player1 = Player(name: "", playerID: "");
+  Player player2 = Player(name: "", playerID: "");
   final FinalsGameType gameType;
   final Function(FinalsGame, bool) changeGameState;
   bool finished = false;
   int player1Score = -1;
   int player2Score = -1;
+  Player winner = Player(name: "", playerID: "");
 
   FinalsGame(
       {required this.gameID,
@@ -31,6 +32,11 @@ class FinalsGame {
     if (player1Score > -1 && player2Score > -1) {
       print("$gameID done!");
       finished = true;
+      if (player1Score > player2Score) {
+        winner = player1;
+      } else {
+        winner = player2;
+      }
       changeGameState(this, true);
     }
   }
@@ -54,10 +60,10 @@ class FinalsGame {
 }
 
 class FinalsGameNotifier with ChangeNotifier {
-  List<FinalsGame> _games = [];
-  List<FinalsGame> get finalsGames => _games;
+  List<List<FinalsGame>> _games = [];
+  List<List<FinalsGame>> get finalsGames => _games;
 
-  void update(List<FinalsGame> newGames) {
+  void update(List<List<FinalsGame>> newGames) {
     _games = List.from(newGames);
     notifyListeners();
   }

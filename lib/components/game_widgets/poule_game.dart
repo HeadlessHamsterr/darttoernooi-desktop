@@ -116,7 +116,7 @@ class _PouleGameState extends State<PouleGame> {
                                         ;
                                       }
                                     },
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 20,
                                     ),
                                   )))

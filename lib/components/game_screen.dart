@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/game_widgets/poule_wrapper.dart';
 import 'package:darttoernooi/components/game_widgets/finals_wrapper.dart';
+import 'package:darttoernooi/classes/finals.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -26,15 +27,16 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
   List<Poule> poules = [];
+  late Finals finals;
 
   @override
   void initState() {
+    finals = Finals(amountOfPoules: widget.numberOfPoules);
+    finals.generateFinalsGames();
     generatePoules();
   }
 
-  void onPouleDone(Poule poule) {
-    setState(() {});
-  }
+  void onPouleDone(Poule poule) {}
 
   void generatePoules() {
     for (int i = 0; i < widget.numberOfPoules; i++) {
@@ -99,26 +101,9 @@ class _GameState extends State<Game> {
                 );
               },
             ).toList()),
-            PhysicalModel(
-              color: Theme.of(context).colorScheme.background,
-              elevation: 20,
-              borderRadius: BorderRadius.circular(15),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    border: Border.all(color: cardOutlineColor),
-                    borderRadius: BorderRadius.circular(15)),
-                child: Column(
-                  children: [
-                    const Text("Winnaar"),
-                    Text(poules[0].winner.player.name),
-                    const Text("Tweede plaats"),
-                    Text(poules[0].secondPlace.player.name)
-                  ],
-                ),
-              ),
-            ),
-            const FinalsWrapper()
+            FinalsWrapper(
+              games: finals.games,
+            )
           ],
         ),
       ),
