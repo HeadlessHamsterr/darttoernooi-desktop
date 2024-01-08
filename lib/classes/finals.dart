@@ -349,7 +349,7 @@ class Finals {
 
     for (int i = 0; i < amountOfPoules; i++) {
       tempGames[0][i].player1 = winners[gameFormat[i][0]];
-      tempGames[0][i].player2 = winners[gameFormat[i][1]];
+      tempGames[0][i].player2 = secondPlaces[gameFormat[i][1]];
     }
 
     games.update(tempGames);
@@ -474,7 +474,7 @@ class Finals {
         break;
       //The winner of the final gets through to the "game" winner, that just
       //displays the player name as the winner in the UI.
-      case "final":
+      case "finals":
         int gameToEditIndex = tempFinals[gameTypeIndex]
             .indexWhere((FinalsGame game) => game.gameID == "winner");
         if (finished) {

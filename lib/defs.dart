@@ -51,7 +51,7 @@ List<List<int>> getFinalsGameFormat(int amountOfPoules) {
     case 2:
       return [
         [0, 1],
-        [0, 1]
+        [1, 0]
       ];
       break;
     case 3:

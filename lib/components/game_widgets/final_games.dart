@@ -33,7 +33,13 @@ class _FinalGameState extends State<FinalGame> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(finalName),
+        Text(
+          finalName,
+          style: const TextStyle(fontSize: 20),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
         ...widget.games.map((FinalsGame game) => Table(
               border: const TableBorder(
                   bottom: BorderSide(width: 1, color: Colors.grey)),
@@ -49,13 +55,22 @@ class _FinalGameState extends State<FinalGame> {
                     child: AutoSizeText(
                       game.player1.name,
                       maxLines: 1,
+                      style: const TextStyle(
+                        fontSize: 17,
+                      ),
                     ),
                   ),
                   const Center(
                     child: Text("-"),
                   ),
                   Center(
-                    child: AutoSizeText(game.player2.name, maxLines: 1),
+                    child: AutoSizeText(
+                      game.player2.name,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        fontSize: 17,
+                      ),
+                    ),
                   )
                 ]),
                 const TableRow(children: [
@@ -77,7 +92,10 @@ class _FinalGameState extends State<FinalGame> {
                           child: TextFormField(
                             maxLength: 1,
                             keyboardType: TextInputType.number,
-                            enabled: game.player1.name == "" ? false : true,
+                            enabled: game.player1.name != "" &&
+                                    game.player2.name != ""
+                                ? true
+                                : false,
                             initialValue: game.player1Score > -1
                                 ? game.player1Score.toString()
                                 : "",
@@ -104,7 +122,10 @@ class _FinalGameState extends State<FinalGame> {
                           child: TextFormField(
                             maxLength: 1,
                             keyboardType: TextInputType.number,
-                            enabled: game.player1.name == "" ? false : true,
+                            enabled: game.player2.name != "" &&
+                                    game.player1.name != ""
+                                ? true
+                                : false,
                             initialValue: game.player2Score > -1
                                 ? game.player2Score.toString()
                                 : "",

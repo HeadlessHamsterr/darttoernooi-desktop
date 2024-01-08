@@ -23,14 +23,14 @@ class _PouleGameState extends State<PouleGame> {
             elevation: 20,
             borderRadius: BorderRadius.circular(15),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
               decoration: BoxDecoration(
                   border: Border.all(color: cardOutlineColor),
                   borderRadius: BorderRadius.circular(15)),
               child: Column(children: [
                 const Text(
                   "Wedstrijden",
-                  style: TextStyle(fontSize: 15),
+                  style: TextStyle(fontSize: 20),
                 ),
                 ...widget.games.games.map((game) => Table(
                       border: const TableBorder(
@@ -49,12 +49,18 @@ class _PouleGameState extends State<PouleGame> {
                               child: AutoSizeText(
                             game.player1.name,
                             maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 17,
+                            ),
                           )),
                           const Center(child: Text("-")),
                           Center(
                               child: AutoSizeText(
                             game.player2.name,
                             maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 17,
+                            ),
                           ))
                         ]),
                         const TableRow(children: [
