@@ -37,7 +37,9 @@ class _GameState extends State<Game> {
     generatePoules();
   }
 
-  void onPouleDone(Poule poule) {}
+  void onPouleDone(Poule poule) {
+    finals.updateWinners(poule);
+  }
 
   void generatePoules() {
     for (int i = 0; i < widget.numberOfPoules; i++) {

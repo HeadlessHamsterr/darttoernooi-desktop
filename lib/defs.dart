@@ -45,3 +45,33 @@ List<List<int>> getGameFormat(int amountOfPlayers) {
   gameFormat.shuffle();
   return gameFormat;
 }
+
+List<List<int>> getFinalsGameFormat(int amountOfPoules) {
+  switch (amountOfPoules) {
+    case 2:
+      return [
+        [0, 1],
+        [0, 1]
+      ];
+      break;
+    case 3:
+      return [
+        [0, 2],
+        [1, 0],
+        [2, 1]
+      ];
+      break;
+    case 4:
+      return [
+        [0, 3],
+        [1, 2],
+        [2, 0],
+        [3, 1]
+      ];
+      break;
+    default:
+      return [
+        [0, 0]
+      ];
+  }
+}

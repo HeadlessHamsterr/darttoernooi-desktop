@@ -1,11 +1,14 @@
 import 'package:darttoernooi/classes/finals_game.dart';
 import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/finals_game_types.dart';
+import 'package:darttoernooi/classes/poule.dart';
+import 'package:darttoernooi/defs.dart';
 
 class Finals {
   final int amountOfPoules;
   List<Player> winners = [];
   List<Player> secondPlaces = [];
+  List<List<int>> gameFormat = [];
   FinalsGameNotifier games = FinalsGameNotifier();
   bool quartsDone = false;
   bool halfsDone = false;
@@ -160,6 +163,13 @@ class Finals {
     ]);
 
     games.update(newGames);
+
+    for (int i = 0; i < amountOfPoules; i++) {
+      winners.add(Player(name: "", playerID: ""));
+      secondPlaces.add(Player(playerID: "", name: ""));
+    }
+
+    gameFormat = getFinalsGameFormat(amountOfPoules);
 /*
     if (amountOfPoules == 1) {
       games.update([
@@ -315,6 +325,36 @@ class Finals {
     */
   }
 
+  void updateWinners(Poule poule) {
+    List<List<FinalsGame>> tempGames = List.from(games.finalsGames);
+
+    switch (poule.pouleNum) {
+      case "A":
+        winners[0] = poule.winner.player;
+        secondPlaces[0] = poule.secondPlace.player;
+        break;
+      case "B":
+        winners[1] = poule.winner.player;
+        secondPlaces[1] = poule.secondPlace.player;
+        break;
+      case "C":
+        winners[2] = poule.winner.player;
+        secondPlaces[2] = poule.secondPlace.player;
+        break;
+      case "D":
+        winners[3] = poule.winner.player;
+        secondPlaces[3] = poule.secondPlace.player;
+        break;
+    }
+
+    for (int i = 0; i < amountOfPoules; i++) {
+      tempGames[0][i].player1 = winners[gameFormat[i][0]];
+      tempGames[0][i].player2 = winners[gameFormat[i][1]];
+    }
+
+    games.update(tempGames);
+  }
+
   //This function handles moving the players to the next finals game when a
   //previous game is finished. The function also resets the next finals game
   //when a previous game is not finished anymore.
@@ -324,26 +364,26 @@ class Finals {
     int gameTypeIndex = 0;
 
     if (game.gameID.contains("quart")) {
-      gameTypeIndex = 0;
+      gameTypeIndex = 1;
     } else if (game.gameID.contains("half")) {
       if (amountOfPoules > 2) {
-        gameTypeIndex = 1;
+        gameTypeIndex = 2;
       } else {
-        gameTypeIndex = 0;
+        gameTypeIndex = 1;
       }
     } else if (game.gameID == "finals") {
       if (amountOfPoules > 2) {
-        gameTypeIndex = 2;
+        gameTypeIndex = 3;
       } else {
-        gameTypeIndex = 1;
+        gameTypeIndex = 2;
       }
     } else if (game.gameID == "winner") {
       if (amountOfPoules == 1) {
-        gameTypeIndex = 0;
+        gameTypeIndex = 1;
       } else if (amountOfPoules == 2) {
-        gameTypeIndex = 2;
-      } else if (amountOfPoules > 2) {
         gameTypeIndex = 3;
+      } else if (amountOfPoules > 2) {
+        gameTypeIndex = 4;
       }
     }
 
