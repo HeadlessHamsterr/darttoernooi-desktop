@@ -88,7 +88,7 @@ class _NewGameState extends State<NewGame> {
                 height: 50,
               ),
               PhysicalModel(
-                color: Theme.of(context).colorScheme.background,
+                color: cardBackground,
                 elevation: 20,
                 borderRadius: BorderRadius.circular(15),
                 child: Container(

@@ -19,7 +19,7 @@ class _PouleGameState extends State<PouleGame> {
       listenable: widget.games,
       builder: (BuildContext context, Widget? child) {
         return PhysicalModel(
-            color: Theme.of(context).colorScheme.background,
+            color: cardBackground,
             elevation: 20,
             borderRadius: BorderRadius.circular(15),
             child: Container(

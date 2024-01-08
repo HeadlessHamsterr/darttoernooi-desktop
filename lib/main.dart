@@ -45,7 +45,7 @@ class StartScreen extends StatelessWidget {
             ),
             PhysicalModel(
               elevation: 20,
-              color: Theme.of(context).colorScheme.background,
+              color: cardBackground,
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 decoration: BoxDecoration(

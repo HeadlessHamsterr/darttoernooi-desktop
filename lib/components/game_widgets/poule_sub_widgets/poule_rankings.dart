@@ -32,7 +32,7 @@ class _PouleRankingsState extends State<PouleRankings> {
             Iterable<int>.generate(widget.rankings.players.length).toList();
         return PhysicalModel(
             elevation: 20,
-            color: Theme.of(context).colorScheme.background,
+            color: cardBackground,
             borderRadius: BorderRadius.circular(15),
             child: Container(
                 padding: const EdgeInsets.all(10),

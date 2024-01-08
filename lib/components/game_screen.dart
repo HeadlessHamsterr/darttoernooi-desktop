@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/poule.dart';
 import 'package:darttoernooi/classes/setting.dart';
+import 'package:flutter/rendering.dart';
 import 'package:uuid/uuid.dart';
 import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/game_widgets/poule_wrapper.dart';
