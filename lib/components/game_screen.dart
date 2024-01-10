@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:darttoernooi/classes/game.dart';
+import 'package:darttoernooi/components/active_games.dart';
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/poule.dart';
@@ -11,11 +13,13 @@ import 'package:darttoernooi/components/game_widgets/finals_wrapper.dart';
 import 'package:darttoernooi/classes/finals.dart';
 import 'package:socket_io/socket_io.dart';
 import 'package:darttoernooi/names.dart';
+import 'package:darttoernooi/classes/active_game.dart';
+import 'package:darttoernooi/classes/app_message_decoder.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
-class Game extends StatefulWidget {
-  const Game(
+class GameScreen extends StatefulWidget {
+  const GameScreen(
       {super.key,
       required this.playersNames,
       required this.settings,
@@ -26,18 +30,20 @@ class Game extends StatefulWidget {
   final int numberOfPoules;
 
   @override
-  State<Game> createState() => _GameState();
+  State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameState extends State<Game> {
+class _GameScreenState extends State<GameScreen> {
   late RawDatagramSocket udpReceiver;
   List<Poule> poules = [];
+  ActiveGameList activeGameList = ActiveGameList();
   String serverName = "";
   late Finals finals;
   var io = Server();
 
   @override
   void initState() {
+    super.initState();
     serverName = names[Random().nextInt(names.length)];
     RawDatagramSocket.bind(InternetAddress.anyIPv4, 8889)
         .then((RawDatagramSocket udpSocket) {
@@ -79,10 +85,12 @@ class _GameState extends State<Game> {
 
     io.on('connection', (client) {
       print('Websocket client connected');
-      client.emit('fromServer', 'ok');
       client.on('clientGreeting', (data) {
         print('Data from client: $data');
+        client.emit('fromServer', 'ok');
       });
+
+      client.on('disconnect', (data) => print("Client disconnected"));
 
       client.on('allPouleInfoRequest', (data) {
         List msg = [];
@@ -120,6 +128,77 @@ class _GameState extends State<Game> {
           ];
 
           client.emit('poule${data}Ranks', msg);
+        }
+      });
+
+      client.on('activeGameInfo', (data) {
+        print('Active game info: $data');
+        AppMessage appMessage =
+            appMessageDecoder("activeGameInfo", data.toString());
+
+        bool newGame = true;
+        int activeGameIndex = activeGameList.activeGames.indexWhere(
+            (ActiveGame activeGame) => activeGame.gameID == appMessage.gameID);
+
+        if (activeGameIndex != -1) {
+          newGame = false;
+        }
+
+        if (newGame) {
+          print("New game started with ID ${appMessage.gameID}");
+          ActiveGame newActiveGame = ActiveGame(
+              player1: appMessage.player1,
+              player2: appMessage.player2,
+              player1Score: appMessage.player1Score,
+              player2Score: appMessage.player2Score,
+              player1Turn: appMessage.player1Turn,
+              startingPlayer: appMessage.startingPlayer,
+              gameID: appMessage.gameID);
+
+          activeGameList.addGame(newActiveGame);
+        } else {
+          print("Update from existing game ${appMessage.gameID}");
+          activeGameList.activeGames[activeGameIndex]
+              .updatePlayerSettings(appMessage);
+        }
+      });
+
+      client.on('stopActiveGame', (gameID) {
+        activeGameList.removeGame(gameID);
+      });
+
+      client.on('gamePlayed', (data) {
+        AppMessage appMessage = appMessageDecoder('gamePlayed', data);
+        activeGameList.removeGame(appMessage.gameID);
+
+        if (appMessage.gameType == "finals_game") {
+          print("Finals game done");
+        } else {
+          int pouleIndex = poules.indexWhere(
+              (Poule poule) => poule.pouleNum == appMessage.gameID[0]);
+          if (pouleIndex == -1) {
+            print("Unkown poule (Poule ${appMessage.gameID[0]})");
+            return;
+          }
+
+          int gameIndex = poules[pouleIndex]
+              .games
+              .games
+              .indexWhere((Game game) => game.gameID == appMessage.gameID);
+          if (gameIndex == -1) {
+            print("Unkown game (Game ${appMessage.gameID})");
+            return;
+          }
+
+          Game gameToEdit = poules[pouleIndex].games.games[gameIndex];
+          print(
+              "Finishing game ${gameToEdit.gameID} with player 1: ${appMessage.player1Average} and player 2: ${appMessage.player2Average}");
+          gameToEdit.updateScore(gameToEdit.player1, appMessage.player1LegsWon,
+              appMessage.player1Average);
+          gameToEdit.updateScore(gameToEdit.player2, appMessage.player2LegsWon,
+              appMessage.player2Average);
+
+          poules[pouleIndex].games.sendNotification();
         }
       });
     });
@@ -195,8 +274,15 @@ class _GameState extends State<Game> {
                 );
               },
             ).toList()),
-            FinalsWrapper(
-              games: finals.games,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ActiveGames(activeGamesList: activeGameList),
+                FinalsWrapper(
+                  games: finals.games,
+                ),
+              ],
             )
           ],
         ),

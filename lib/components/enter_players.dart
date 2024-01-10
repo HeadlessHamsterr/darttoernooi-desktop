@@ -40,7 +40,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
       Navigator.pushAndRemoveUntil(
           context,
           PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => Game(
+              pageBuilder: (context, animation1, animation2) => GameScreen(
                     playersNames: players,
                     settings: widget.settings,
                     numberOfPoules: widget.numberOfPoules,

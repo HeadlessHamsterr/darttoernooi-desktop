@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/player.dart';
 
-class Game {
+class Game with ChangeNotifier {
   final String gameID;
   final Player player1;
   final Player player2;
@@ -39,6 +39,7 @@ class Game {
       finished = true;
       changeGameState(this, true);
     }
+    notifyListeners();
   }
 
   void resetScore(Player player) {
@@ -70,6 +71,10 @@ class GameNotifier with ChangeNotifier {
 
   void update(List<Game> newGames) {
     _games = List.from(newGames);
+    notifyListeners();
+  }
+
+  void sendNotification() {
     notifyListeners();
   }
 

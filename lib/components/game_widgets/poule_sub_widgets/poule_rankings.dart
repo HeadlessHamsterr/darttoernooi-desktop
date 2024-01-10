@@ -85,15 +85,19 @@ class _PouleRankingsState extends State<PouleRankings> {
                             .map((int i) => TableRow(
                                   children: [
                                     Center(
-                                      child: AutoSizeText(
-                                        widget.rankings.players[i].name,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                            color: i == 0
-                                                ? Colors.amber
-                                                : i == 1
-                                                    ? Colors.grey
-                                                    : Colors.white),
+                                      child: Tooltip(
+                                        message:
+                                            "Gemiddelde score: ${widget.rankings.players[i].tournamentAverage.toString()}",
+                                        child: AutoSizeText(
+                                          widget.rankings.players[i].name,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              color: i == 0
+                                                  ? Colors.amber
+                                                  : i == 1
+                                                      ? Colors.grey
+                                                      : Colors.white),
+                                        ),
                                       ),
                                     ),
                                     Center(
