@@ -31,8 +31,13 @@ class _PouleGameState extends State<PouleGame> {
         print('Setting player1Controller to: ${game.player1Score}');
         print('Setting player2Controller to: ${game.player2Score}');
 
-        player1ScoreController.text = game.player1Score.toString();
-        player2ScoreController.text = game.player2Score.toString();
+        if (game.player1Score > -1) {
+          player1ScoreController.text = game.player1Score.toString();
+        }
+
+        if (game.player2Score > -1) {
+          player2ScoreController.text = game.player2Score.toString();
+        }
       });
 
       textControllers.add([player1ScoreController, player2ScoreController]);
