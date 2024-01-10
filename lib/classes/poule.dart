@@ -9,18 +9,23 @@ import 'package:darttoernooi/classes/single_player_notifier.dart';
 
 class Poule {
   final String pouleNum;
-  final Function(Poule) onGameDone;
+  final Function(Poule) onPouleDone;
+  final Function(String) onGameDone;
   PlayersNotifier players = PlayersNotifier();
   PlayersNotifier rankings = PlayersNotifier();
   GameNotifier games = GameNotifier();
   List<Player> tiedPlayers = [];
   List<List<int>> gameFormat = [];
   bool allGamesDone = false;
+  bool allowedToSortByAverage = true;
   PlayerNotifer winner = PlayerNotifer();
   PlayerNotifer secondPlace = PlayerNotifer();
   late int numGames;
 
-  Poule({required this.pouleNum, required this.onGameDone});
+  Poule(
+      {required this.pouleNum,
+      required this.onPouleDone,
+      required this.onGameDone});
 
   void updatePlayers(List<Player> newPlayers) {
     players.update(newPlayers);
@@ -48,6 +53,14 @@ class Poule {
     return Future(() {
       List<Player> tempPlayers = List.from(players.players);
 
+      allowedToSortByAverage = true;
+      for (Player player in tempPlayers) {
+        if (!player.allGamesHaveAverages) {
+          allowedToSortByAverage = false;
+          break;
+        }
+      }
+
       tempPlayers.sort((player1, player2) {
         if (player1.legsWon != player2.legsWon) {
           return player1.legsWon.compareTo(player2.legsWon) *
@@ -57,7 +70,8 @@ class Poule {
               -1;
         } else if (player1.tournamentAverage != player2.tournamentAverage &&
             player1.tournamentAverage != 0 &&
-            player2.tournamentAverage != 0) {
+            player2.tournamentAverage != 0 &&
+            allowedToSortByAverage) {
           return player1.tournamentAverage.compareTo(player2.pointsDifference) *
               -1;
         } else {
@@ -96,15 +110,17 @@ class Poule {
         allGamesDone = true;
         winner.update(rankings.players[0]);
         secondPlace.update(rankings.players[1]);
-        onGameDone(this);
+        onPouleDone(this);
       }
     } else if (allGamesDone) {
       allGamesDone = false;
       print("Not all games for Poule $pouleNum are done");
       winner.update(Player(playerID: "", name: ""));
       secondPlace.update(Player(playerID: "", name: ""));
-      onGameDone(this);
+      onPouleDone(this);
     }
+
+    onGameDone(pouleNum);
   }
 
   void generateGames() {

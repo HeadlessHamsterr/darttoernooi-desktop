@@ -79,9 +79,9 @@ class _GameScreenState extends State<GameScreen> {
       });
     });
 
+    generatePoules();
     finals = Finals(amountOfPoules: widget.numberOfPoules);
     finals.generateFinalsGames();
-    generatePoules();
 
     io.on('connection', (client) {
       print('Websocket client connected');
@@ -205,13 +205,37 @@ class _GameScreenState extends State<GameScreen> {
     io.listen(11520);
   }
 
+  void sendPouleInfo(String pouleNum) {
+    print("Poule info request for Poule $pouleNum");
+    int pouleIndex =
+        poules.indexWhere((Poule poule) => poule.pouleNum == pouleNum);
+
+    if (pouleIndex == -1) {
+      List msg = [
+        ['No active', 'game']
+      ];
+      io.emit('poule${pouleNum}Ranks', msg);
+    } else {
+      List msg = [
+        poules[pouleIndex].rankings.convertToList(),
+        poules[pouleIndex].games.convertToList(),
+        'poule'
+      ];
+
+      io.emit('poule${pouleNum}Ranks', msg);
+    }
+  }
+
   void onPouleDone(Poule poule) {
     finals.updateWinners(poule);
   }
 
   void generatePoules() {
     for (int i = 0; i < widget.numberOfPoules; i++) {
-      poules.add(Poule(pouleNum: pouleNums[i], onGameDone: onPouleDone));
+      poules.add(Poule(
+          pouleNum: pouleNums[i],
+          onPouleDone: onPouleDone,
+          onGameDone: sendPouleInfo));
     }
     double playersPerPoule = widget.playersNames.length / widget.numberOfPoules;
     int playersPerPouleAbs = playersPerPoule.floor();
