@@ -1,13 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/poule.dart';
 import 'package:darttoernooi/classes/setting.dart';
-import 'package:flutter/rendering.dart';
 import 'package:uuid/uuid.dart';
-import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/game_widgets/poule_wrapper.dart';
 import 'package:darttoernooi/components/game_widgets/finals_wrapper.dart';
 import 'package:darttoernooi/classes/finals.dart';
+import 'package:socket_io/socket_io.dart';
+import 'package:darttoernooi/names.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -27,14 +30,100 @@ class Game extends StatefulWidget {
 }
 
 class _GameState extends State<Game> {
+  late RawDatagramSocket udpReceiver;
   List<Poule> poules = [];
+  String serverName = "";
   late Finals finals;
+  var io = Server();
 
   @override
   void initState() {
+    serverName = names[Random().nextInt(names.length)];
+    RawDatagramSocket.bind(InternetAddress.anyIPv4, 8889)
+        .then((RawDatagramSocket udpSocket) {
+      udpReceiver = udpSocket;
+      udpSocket.broadcastEnabled = true;
+      udpSocket.listen((event) {
+        Datagram? dg = udpSocket.receive();
+        if (dg != null) {
+          String message = utf8.decode(dg.data);
+          List<String> messageList = message.split(',');
+
+          if (messageList[0] == "serverNameRequest") {
+            NetworkInterface.list().then((value) {
+              bool msgSent = false;
+              for (NetworkInterface network in value) {
+                for (var addr in network.addresses) {
+                  if (addr.address.isNotEmpty) {
+                    String returnMsg = 'serverName,$serverName,${addr.address}';
+                    print('Sending: $returnMsg to ${messageList[1]}');
+                    udpSocket.send(utf8.encode(returnMsg),
+                        InternetAddress(messageList[1]), 8889);
+                    msgSent = true;
+                    break;
+                  }
+                }
+                if (msgSent) {
+                  break;
+                }
+              }
+            });
+          }
+        }
+      });
+    });
+
     finals = Finals(amountOfPoules: widget.numberOfPoules);
     finals.generateFinalsGames();
     generatePoules();
+
+    io.on('connection', (client) {
+      print('Websocket client connected');
+      client.emit('fromServer', 'ok');
+      client.on('clientGreeting', (data) {
+        print('Data from client: $data');
+      });
+
+      client.on('allPouleInfoRequest', (data) {
+        List msg = [];
+        List<String> pouleNames = [];
+
+        for (Poule poule in poules) {
+          pouleNames.add(poule.pouleNum);
+        }
+        msg.add(pouleNames);
+
+        List<int> settings = [];
+        for (Setting setting in widget.settings) {
+          settings.add(int.parse(setting.defaultValue));
+        }
+        msg.add(settings);
+        print(msg);
+        client.emit('pouleInfo', msg);
+      });
+
+      client.on('singlePouleInfoRequest', (data) {
+        print("Poule info request for Poule $data");
+        int pouleIndex =
+            poules.indexWhere((Poule poule) => poule.pouleNum == data);
+
+        if (pouleIndex == -1) {
+          List msg = [
+            ['No active', 'game']
+          ];
+          client.emit('poule${data}Ranks', msg);
+        } else {
+          List msg = [
+            poules[pouleIndex].rankings.convertToList(),
+            poules[pouleIndex].games.convertToList(),
+            'poule'
+          ];
+
+          client.emit('poule${data}Ranks', msg);
+        }
+      });
+    });
+    io.listen(11520);
   }
 
   void onPouleDone(Poule poule) {
@@ -79,10 +168,12 @@ class _GameState extends State<Game> {
   Widget build(context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Wedstrijd"),
+          title: Text(serverName),
           leading: IconButton(
-            onPressed: () =>
-                Navigator.popUntil(context, (route) => route.isFirst),
+            onPressed: () => io.close().then((value) {
+              udpReceiver.close();
+              Navigator.popUntil(context, (route) => route.isFirst);
+            }),
             icon: const Icon(Icons.home),
           )),
       body: SingleChildScrollView(

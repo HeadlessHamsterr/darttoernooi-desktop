@@ -32,6 +32,23 @@ class _EnterPlayersState extends State<EnterPlayers> {
     indexList = Iterable<int>.generate(players.length).toList();
   }
 
+  void continueToGame() {
+    FocusManager.instance.primaryFocus!.unfocus();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      Navigator.pushAndRemoveUntil(
+          context,
+          PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => Game(
+                    playersNames: players,
+                    settings: widget.settings,
+                    numberOfPoules: widget.numberOfPoules,
+                  )),
+          (route) => route.isFirst);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +91,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
                                       onChanged: (value) => setState(() {
                                         players[i] = value;
                                       }),
+                                      onFieldSubmitted: (_) => continueToGame(),
                                       validator: (value) {
                                         if (value!.isNotEmpty) {
                                           RegExp regex = RegExp(r'(\w+)');
@@ -109,25 +127,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
                           width: 20,
                         ),
                         ElevatedButton(
-                            onPressed: () {
-                              FocusManager.instance.primaryFocus!.unfocus();
-                              if (_formKey.currentState!.validate()) {
-                                _formKey.currentState!.save();
-
-                                Navigator.pushAndRemoveUntil(
-                                    context,
-                                    PageRouteBuilder(
-                                        pageBuilder:
-                                            (context, animation1, animation2) =>
-                                                Game(
-                                                  playersNames: players,
-                                                  settings: widget.settings,
-                                                  numberOfPoules:
-                                                      widget.numberOfPoules,
-                                                )),
-                                    (route) => route.isFirst);
-                              }
-                            },
+                            onPressed: () => continueToGame(),
                             child: const Text("Spel maken"))
                       ],
                     )

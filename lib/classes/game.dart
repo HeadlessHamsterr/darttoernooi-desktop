@@ -11,6 +11,7 @@ class Game {
   double player1Average = 0.0;
   double player2Average = 0.0;
   bool finished = false;
+  bool active = false;
 
   Game(
       {required this.gameID,
@@ -70,5 +71,20 @@ class GameNotifier with ChangeNotifier {
   void update(List<Game> newGames) {
     _games = List.from(newGames);
     notifyListeners();
+  }
+
+  List<List> convertToList() {
+    List<List> gamesList = [];
+
+    for (Game game in _games) {
+      List tempGame = [
+        game.player1.name,
+        game.player2.name,
+        game.active || game.finished
+      ];
+      gamesList.add(tempGame);
+    }
+
+    return gamesList;
   }
 }

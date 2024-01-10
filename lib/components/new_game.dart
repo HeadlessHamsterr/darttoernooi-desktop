@@ -66,6 +66,102 @@ class _NewGameState extends State<NewGame> {
         defaultValue: 'false')*/
   ];
 
+  void continueToEnterPlayers() {
+    FocusManager.instance.primaryFocus!.unfocus();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      print(numberOfPlayers);
+      if (numberOfPlayers > 20) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: Text("$numberOfPlayers spelers is te veel."),
+                  content: const Text("Er mogen maximaal 20 spelers meedoen."),
+                ));
+      } else if (numberOfPlayers < 2) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: Text(
+                      "$numberOfPlayers ${numberOfPlayers == 1 ? "speler" : "spelers"} is te weinig."),
+                  content: const Text("Er moeten minimaal 2 spelers meedoen."),
+                ));
+      } else if (numberOfPoules > 4) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: Text("$numberOfPoules poules is te veel."),
+                  content:
+                      const Text("Er kunnen maximaal 4 poules gemaakt worden."),
+                ));
+      } else if (numberOfPoules < 1) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: const Text("Maat."),
+                  content: const Text("Je moet wel poules toevoegen"),
+                ));
+      } else if (numberOfPlayers / numberOfPoules > 5) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: const Text("Te veel spelers per poule."),
+                  content: Text(
+                      "Er kunnen maar 5 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
+                ));
+      } else if (numberOfPlayers / numberOfPoules < 2) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Sluiten"))
+                  ],
+                  title: const Text("Te weinig spelers per poule."),
+                  content: Text(
+                      "Er moeten minimaal 2 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
+                ));
+      } else {
+        Navigator.push(
+            context,
+            PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => EnterPlayers(
+                      numberOfPlayers: numberOfPlayers,
+                      numberOfPoules: numberOfPoules,
+                      settings: settings,
+                    ),
+                transitionDuration: const Duration(seconds: 0)));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,6 +206,7 @@ class _NewGameState extends State<NewGame> {
                               decoration: const InputDecoration(
                                   labelText: "Aantal spelers",
                                   helperText: "(max 20)"),
+                              onFieldSubmitted: (_) => continueToEnterPlayers(),
                               onSaved: (String? value) {
                                 if (value!.isNotEmpty) {
                                   numberOfPlayers = int.parse(value.toString());
@@ -142,6 +239,7 @@ class _NewGameState extends State<NewGame> {
                               decoration: const InputDecoration(
                                   labelText: "Aantal poules",
                                   helperText: "(max 4)"),
+                              onFieldSubmitted: (_) => continueToEnterPlayers(),
                               onSaved: (String? value) {
                                 if (value!.isNotEmpty) {
                                   numberOfPoules = int.parse(value.toString());
@@ -223,127 +321,7 @@ class _NewGameState extends State<NewGame> {
                             height: 20,
                           ),
                           ElevatedButton(
-                              onPressed: () {
-                                FocusManager.instance.primaryFocus!.unfocus();
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-
-                                  print(numberOfPlayers);
-                                  if (numberOfPlayers > 20) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: Text(
-                                                  "$numberOfPlayers spelers is te veel."),
-                                              content: const Text(
-                                                  "Er mogen maximaal 20 spelers meedoen."),
-                                            ));
-                                  } else if (numberOfPlayers < 2) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: Text(
-                                                  "$numberOfPlayers ${numberOfPlayers == 1 ? "speler" : "spelers"} is te weinig."),
-                                              content: const Text(
-                                                  "Er moeten minimaal 2 spelers meedoen."),
-                                            ));
-                                  } else if (numberOfPoules > 4) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: Text(
-                                                  "$numberOfPoules poules is te veel."),
-                                              content: const Text(
-                                                  "Er kunnen maximaal 4 poules gemaakt worden."),
-                                            ));
-                                  } else if (numberOfPoules < 1) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: const Text("Maat."),
-                                              content: const Text(
-                                                  "Je moet wel poules toevoegen"),
-                                            ));
-                                  } else if (numberOfPlayers / numberOfPoules >
-                                      5) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: const Text(
-                                                  "Te veel spelers per poule."),
-                                              content: Text(
-                                                  "Er kunnen maar 5 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
-                                            ));
-                                  } else if (numberOfPlayers / numberOfPoules <
-                                      2) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child:
-                                                        const Text("Sluiten"))
-                                              ],
-                                              title: const Text(
-                                                  "Te weinig spelers per poule."),
-                                              content: Text(
-                                                  "Er moeten minimaal 2 spelers in elke poule. \nIn deze configuratie is het ${double.parse((numberOfPlayers / numberOfPoules).toStringAsFixed(2))} spelers per poule."),
-                                            ));
-                                  } else {
-                                    Navigator.push(
-                                        context,
-                                        PageRouteBuilder(
-                                            pageBuilder: (context, animation1,
-                                                    animation2) =>
-                                                EnterPlayers(
-                                                  numberOfPlayers:
-                                                      numberOfPlayers,
-                                                  numberOfPoules:
-                                                      numberOfPoules,
-                                                  settings: settings,
-                                                ),
-                                            transitionDuration:
-                                                const Duration(seconds: 0)));
-                                  }
-                                }
-                              },
+                              onPressed: () => continueToEnterPlayers(),
                               child: const Text("Spel starten"))
                         ],
                       ),

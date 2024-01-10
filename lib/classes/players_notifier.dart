@@ -9,4 +9,22 @@ class PlayersNotifier with ChangeNotifier {
     _players = List.from(newPlayers);
     notifyListeners();
   }
+
+  List<List<String>> convertToList() {
+    List<List<String>> stringPlayers = [];
+
+    for (Player player in _players) {
+      player.calculatePointsDifference();
+
+      List<String> stringPlayer = [
+        player.name,
+        player.legsWon.toString(),
+        player.pointsDifference.toString()
+      ];
+
+      stringPlayers.add(stringPlayer);
+    }
+
+    return stringPlayers;
+  }
 }
