@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:darttoernooi/classes/finals_game.dart';
 import 'package:darttoernooi/classes/game.dart';
 import 'package:darttoernooi/components/active_games.dart';
+import 'package:darttoernooi/defs.dart';
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/poule.dart';
@@ -80,7 +82,8 @@ class _GameScreenState extends State<GameScreen> {
     });
 
     generatePoules();
-    finals = Finals(amountOfPoules: widget.numberOfPoules);
+    finals = Finals(
+        amountOfPoules: widget.numberOfPoules, onFinalDone: sendFinalsInfo);
     finals.generateFinalsGames();
 
     io.on('connection', (client) {
@@ -156,6 +159,11 @@ class _GameScreenState extends State<GameScreen> {
               gameID: appMessage.gameID);
 
           activeGameList.addGame(newActiveGame);
+          if (appMessage.gameType == 'finals_game') {
+            sendFinalsInfo();
+          } else {
+            sendPouleInfo(appMessage.gameID[0]);
+          }
         } else {
           print("Update from existing game ${appMessage.gameID}");
           activeGameList.activeGames[activeGameIndex]
@@ -201,6 +209,20 @@ class _GameScreenState extends State<GameScreen> {
           poules[pouleIndex].games.sendNotification();
         }
       });
+
+      client.on('finalsInfoRequest', (data) {
+        List<List<String>> message = [];
+
+        for (int i = 0; i < finals.games.finalsGames.length; i++) {
+          for (int j = 0; j < finals.games.finalsGames[i].length; j++) {
+            message.add(finals.games.finalsGames[i][j].convertToList());
+          }
+        }
+
+        print("Sending response to finals game request:");
+        print(message);
+        client.emit('finalsInfo', message);
+      });
     });
     io.listen(11520);
   }
@@ -226,8 +248,23 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void sendFinalsInfo() {
+    List<List<String>> message = [];
+
+    for (int i = 0; i < finals.games.finalsGames.length; i++) {
+      for (int j = 0; j < finals.games.finalsGames[i].length; j++) {
+        message.add(finals.games.finalsGames[i][j].convertToList());
+      }
+    }
+
+    print("Sending response to finals game request:");
+    print(message);
+    io.emit('finalsInfo', message);
+  }
+
   void onPouleDone(Poule poule) {
     finals.updateWinners(poule);
+    sendFinalsInfo();
   }
 
   void generatePoules() {
@@ -280,37 +317,58 @@ class _GameScreenState extends State<GameScreen> {
             icon: const Icon(Icons.home),
           )),
       body: SingleChildScrollView(
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-            ),
-            Row(
-                children: poules.map(
-              (Poule poule) {
-                return Row(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+              ),
+              Row(children: [
+                SingleChildScrollView(
+                    child: Row(
+                        children: poules.map(
+                  (Poule poule) {
+                    return Row(
+                      children: [
+                        PouleWrapper(poule: poule),
+                        const SizedBox(
+                          width: 20,
+                        )
+                      ],
+                    );
+                  },
+                ).toList())),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PouleWrapper(poule: poule),
                     const SizedBox(
-                      width: 20,
-                    )
+                      height: 15,
+                    ),
+                    Row(
+                      children: [
+                        ActiveGames(activeGamesList: activeGameList),
+                        SizedBox(
+                          height: 185,
+                          child: PhysicalModel(
+                            color: cardBackground,
+                            elevation: 20,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    ),
+                    FinalsWrapper(
+                      games: finals.games,
+                    ),
                   ],
-                );
-              },
-            ).toList()),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ActiveGames(activeGamesList: activeGameList),
-                FinalsWrapper(
-                  games: finals.games,
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
+                )
+              ]),
+            ],
+          )),
     );
   }
 }

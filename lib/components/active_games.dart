@@ -14,22 +14,22 @@ class ActiveGames extends StatefulWidget {
 class _ActiveGamesState extends State<ActiveGames> {
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 1000,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ListenableBuilder(
-          listenable: widget.activeGamesList,
-          builder: (BuildContext context, Widget? child) {
-            return Row(
-              children: widget.activeGamesList.activeGames
-                  .map((ActiveGame activeGame) =>
-                      ActiveGameWidget(game: activeGame))
-                  .toList(),
-            );
-          },
-        ),
-      ),
+    return ListenableBuilder(
+      listenable: widget.activeGamesList,
+      builder: (BuildContext context, Widget? child) {
+        return Row(
+          children: widget.activeGamesList.activeGames
+              .map((ActiveGame activeGame) => Row(
+                    children: [
+                      ActiveGameWidget(game: activeGame),
+                      const SizedBox(
+                        width: 10,
+                      )
+                    ],
+                  ))
+              .toList(),
+        );
+      },
     );
   }
 }

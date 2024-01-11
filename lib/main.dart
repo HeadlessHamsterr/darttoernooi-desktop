@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/components/new_game.dart';
 import 'package:darttoernooi/defs.dart';
+import 'package:darttoernooi/classes/custom_scroll_behavior.dart';
 
 void main() {
   runApp(const App());
@@ -23,6 +24,7 @@ class App extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
+      scrollBehavior: CustomScrollBehavior(),
       home: const StartScreen(),
     );
   }

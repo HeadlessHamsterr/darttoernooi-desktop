@@ -6,6 +6,7 @@ import 'package:darttoernooi/defs.dart';
 
 class Finals {
   final int amountOfPoules;
+  final Function onFinalDone;
   List<Player> winners = [];
   List<Player> secondPlaces = [];
   List<List<int>> gameFormat = [];
@@ -14,7 +15,7 @@ class Finals {
   bool halfsDone = false;
   bool finalDone = false;
 
-  Finals({required this.amountOfPoules});
+  Finals({required this.amountOfPoules, required this.onFinalDone});
 
   List<Player> _generateFinalsPlayers(int numberOfGames) {
     List<Player> players = [];
@@ -94,19 +95,22 @@ class Finals {
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.quart,
-            changeGameState: _onGameChangeState),
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone),
         FinalsGame(
             gameID: "quart2",
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.quart,
-            changeGameState: _onGameChangeState),
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone),
         FinalsGame(
             gameID: "quart3",
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.quart,
-            changeGameState: _onGameChangeState),
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone),
       ];
 
       if (amountOfPoules == 4) {
@@ -115,7 +119,8 @@ class Finals {
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.quart,
-            changeGameState: _onGameChangeState));
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone));
       }
 
       newGames.add(quarts);
@@ -129,7 +134,8 @@ class Finals {
           player1: Player(name: "", playerID: ""),
           player2: Player(name: "", playerID: ""),
           gameType: FinalsGameType.half,
-          changeGameState: _onGameChangeState));
+          changeGameState: _onGameChangeState,
+          onGameDone: onFinalDone));
 
       if (amountOfPoules != 3) {
         halfs.add(FinalsGame(
@@ -137,7 +143,8 @@ class Finals {
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.half,
-            changeGameState: _onGameChangeState));
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone));
       }
       newGames.add(halfs);
 
@@ -148,7 +155,8 @@ class Finals {
             player1: Player(name: "", playerID: ""),
             player2: Player(name: "", playerID: ""),
             gameType: FinalsGameType.finals,
-            changeGameState: _onGameChangeState),
+            changeGameState: _onGameChangeState,
+            onGameDone: onFinalDone),
       ]);
     }
 
@@ -159,7 +167,8 @@ class Finals {
           player1: Player(name: "", playerID: ""),
           player2: Player(name: "", playerID: ""),
           gameType: FinalsGameType.winner,
-          changeGameState: _onGameChangeState)
+          changeGameState: _onGameChangeState,
+          onGameDone: onFinalDone)
     ]);
 
     games.update(newGames);

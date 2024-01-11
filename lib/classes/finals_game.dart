@@ -8,6 +8,7 @@ class FinalsGame {
   Player player2 = Player(name: "", playerID: "");
   final FinalsGameType gameType;
   final Function(FinalsGame, bool) changeGameState;
+  final Function onGameDone;
   bool finished = false;
   int player1Score = -1;
   int player2Score = -1;
@@ -18,7 +19,8 @@ class FinalsGame {
       required this.player1,
       required this.player2,
       required this.gameType,
-      required this.changeGameState});
+      required this.changeGameState,
+      required this.onGameDone});
 
   void updateScore(Player player, int score) {
     if (player.playerID == player1.playerID) {
@@ -38,6 +40,7 @@ class FinalsGame {
         winner = player2;
       }
       changeGameState(this, true);
+      onGameDone();
     }
   }
 
@@ -56,6 +59,34 @@ class FinalsGame {
 
     finished = false;
     changeGameState(this, false);
+    onGameDone();
+  }
+
+  List<String> convertToList() {
+    String gameTypeString = "";
+
+    switch (gameType) {
+      case FinalsGameType.finals:
+        gameTypeString = 'finals';
+        break;
+      case FinalsGameType.half:
+        gameTypeString = 'half';
+        break;
+      case FinalsGameType.quart:
+        gameTypeString = 'quart';
+        break;
+      case FinalsGameType.winner:
+        gameTypeString = 'winner';
+        break;
+    }
+
+    return [
+      gameID,
+      player1.name,
+      player2.name,
+      finished.toString(),
+      gameTypeString
+    ];
   }
 }
 
