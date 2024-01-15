@@ -4,7 +4,6 @@ import 'package:darttoernooi/components/start_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:darttoernooi/classes/custom_scroll_behavior.dart';
-import 'package:package_info/package_info.dart';
 
 const List<int> appVersion = [0, 1, 0];
 
