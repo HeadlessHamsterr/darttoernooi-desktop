@@ -24,6 +24,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
 
   @override
   void initState() {
+    super.initState();
     players.clear();
     indexList.clear();
     for (int i = 0; i < widget.numberOfPlayers; i++) {
@@ -45,7 +46,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
                     settings: widget.settings,
                     numberOfPoules: widget.numberOfPoules,
                   )),
-          (route) => route.isFirst);
+          ModalRoute.withName('/start_screen'));
     }
   }
 
@@ -77,12 +78,16 @@ class _EnterPlayersState extends State<EnterPlayers> {
                       borderRadius: BorderRadius.circular(15)),
                   padding: const EdgeInsets.fromLTRB(80, 50, 80, 50),
                   child: Column(children: [
-                    SizedBox(
-                      height: 600,
-                      width: 250,
-                      child: Form(
-                        key: _formKey,
+                    Form(
+                      key: _formKey,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                            minHeight: 200,
+                            maxHeight: 600,
+                            minWidth: 250,
+                            maxWidth: 250),
                         child: ListView(
+                          shrinkWrap: true,
                           children: indexList
                               .map((i) => SizedBox(
                                     width: 150,

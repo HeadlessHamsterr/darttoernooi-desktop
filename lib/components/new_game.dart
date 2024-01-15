@@ -170,7 +170,7 @@ class _NewGameState extends State<NewGame> {
         leading: IconButton(
           icon: const Icon(Icons.home),
           onPressed: () =>
-              Navigator.popUntil(context, (route) => route.isFirst),
+              Navigator.popUntil(context, ModalRoute.withName('/start_screen')),
         ),
       ),
       body: Form(

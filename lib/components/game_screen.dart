@@ -62,7 +62,8 @@ class _GameScreenState extends State<GameScreen> {
               bool msgSent = false;
               for (NetworkInterface network in value) {
                 for (var addr in network.addresses) {
-                  if (addr.address.isNotEmpty) {
+                  if (addr.address.isNotEmpty &&
+                      addr.type == InternetAddressType.IPv4) {
                     String returnMsg = 'serverName,$serverName,${addr.address}';
                     print('Sending: $returnMsg to ${messageList[1]}');
                     udpSocket.send(utf8.encode(returnMsg),
@@ -87,13 +88,17 @@ class _GameScreenState extends State<GameScreen> {
     finals.generateFinalsGames();
 
     io.on('connection', (client) {
-      print('Websocket client connected');
       client.on('clientGreeting', (data) {
-        print('Data from client: $data');
         client.emit('fromServer', 'ok');
       });
 
-      client.on('disconnect', (data) => print("Client disconnected"));
+      client.on('disconnect', (data) {
+        for (var game in activeGameList.activeGames) {
+          if (game.clientID == client.hashCode) {
+            activeGameList.removeGame(game.gameID);
+          }
+        }
+      });
 
       client.on('allPouleInfoRequest', (data) {
         List msg = [];
@@ -109,12 +114,10 @@ class _GameScreenState extends State<GameScreen> {
           settings.add(int.parse(setting.defaultValue));
         }
         msg.add(settings);
-        print(msg);
         client.emit('pouleInfo', msg);
       });
 
       client.on('singlePouleInfoRequest', (data) {
-        print("Poule info request for Poule $data");
         int pouleIndex =
             poules.indexWhere((Poule poule) => poule.pouleNum == data);
 
@@ -135,7 +138,6 @@ class _GameScreenState extends State<GameScreen> {
       });
 
       client.on('activeGameInfo', (data) {
-        print('Active game info: $data');
         AppMessage appMessage =
             appMessageDecoder("activeGameInfo", data.toString());
 
@@ -148,7 +150,6 @@ class _GameScreenState extends State<GameScreen> {
         }
 
         if (newGame) {
-          print("New game started with ID ${appMessage.gameID}");
           ActiveGame newActiveGame = ActiveGame(
               player1: appMessage.player1,
               player2: appMessage.player2,
@@ -156,7 +157,8 @@ class _GameScreenState extends State<GameScreen> {
               player2Score: appMessage.player2Score,
               player1Turn: appMessage.player1Turn,
               startingPlayer: appMessage.startingPlayer,
-              gameID: appMessage.gameID);
+              gameID: appMessage.gameID,
+              clientID: client.hashCode);
 
           activeGameList.addGame(newActiveGame);
           if (appMessage.gameType == 'finals_game') {
@@ -165,7 +167,6 @@ class _GameScreenState extends State<GameScreen> {
             sendPouleInfo(appMessage.gameID[0]);
           }
         } else {
-          print("Update from existing game ${appMessage.gameID}");
           activeGameList.activeGames[activeGameIndex]
               .updatePlayerSettings(appMessage);
         }
@@ -180,7 +181,6 @@ class _GameScreenState extends State<GameScreen> {
         activeGameList.removeGame(appMessage.gameID);
 
         if (appMessage.gameType == "finals_game") {
-          print("Finals game done");
         } else {
           int pouleIndex = poules.indexWhere(
               (Poule poule) => poule.pouleNum == appMessage.gameID[0]);
@@ -218,9 +218,6 @@ class _GameScreenState extends State<GameScreen> {
             message.add(finals.games.finalsGames[i][j].convertToList());
           }
         }
-
-        print("Sending response to finals game request:");
-        print(message);
         client.emit('finalsInfo', message);
       });
     });
@@ -310,63 +307,72 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
           title: Text(serverName),
           leading: IconButton(
-            onPressed: () => io.close().then((value) {
-              udpReceiver.close();
-              Navigator.popUntil(context, (route) => route.isFirst);
-            }),
+            onPressed: () {
+              io.emit("gameClose", "doei");
+
+              io.close().then((value) {
+                udpReceiver.close();
+                Navigator.popUntil(
+                    context, ModalRoute.withName('/start_screen'));
+              });
+            },
             icon: const Icon(Icons.home),
           )),
       body: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(
-                width: 20,
+                width: 10,
               ),
-              Row(children: [
-                SingleChildScrollView(
-                    child: Row(
-                        children: poules.map(
-                  (Poule poule) {
-                    return Row(
-                      children: [
-                        PouleWrapper(poule: poule),
-                        const SizedBox(
-                          width: 20,
-                        )
-                      ],
-                    );
-                  },
-                ).toList())),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      children: [
-                        ActiveGames(activeGamesList: activeGameList),
-                        SizedBox(
-                          height: 185,
-                          child: PhysicalModel(
-                            color: cardBackground,
-                            elevation: 20,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 40,
-                    ),
-                    FinalsWrapper(
-                      games: finals.games,
-                    ),
-                  ],
-                )
-              ]),
+              SingleChildScrollView(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                      children: poules.map(
+                    (Poule poule) {
+                      return Row(
+                        children: [
+                          PouleWrapper(poule: poule),
+                          const SizedBox(
+                            width: 10,
+                          )
+                        ],
+                      );
+                    },
+                  ).toList()),
+                ],
+              )),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      ActiveGames(activeGamesList: activeGameList),
+                      SizedBox(
+                        height: 185,
+                        child: PhysicalModel(
+                          color: cardBackground,
+                          elevation: 20,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  FinalsWrapper(
+                    games: finals.games,
+                  ),
+                ],
+              ),
             ],
           )),
     );

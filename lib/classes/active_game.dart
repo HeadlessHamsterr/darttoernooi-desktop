@@ -6,6 +6,7 @@ class ActiveGame with ChangeNotifier {
   final String player2;
   final String startingPlayer;
   final String gameID;
+  final int clientID;
 
   int player1Score = 0;
   int player1LegsWon = 0;
@@ -24,7 +25,8 @@ class ActiveGame with ChangeNotifier {
       required this.player2Score,
       required this.player1Turn,
       required this.startingPlayer,
-      required this.gameID});
+      required this.gameID,
+      required this.clientID});
 
   void updatePlayerSettings(AppMessage appMessage) {
     player1Score = appMessage.player1Score;
