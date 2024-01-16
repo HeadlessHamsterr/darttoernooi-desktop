@@ -17,6 +17,8 @@ class AppMessage {
   int player2DartsThrown = 0;
 
   int thrownScore = 0;
+
+  int legsBestOf = 0;
 }
 
 AppMessage appMessageDecoder(String messageType, String message) {
@@ -50,6 +52,8 @@ AppMessage appMessageDecoder(String messageType, String message) {
 
       tempAppMessage.player1 = messageList[9];
       tempAppMessage.player2 = messageList[10];
+
+      tempAppMessage.legsBestOf = int.parse(messageList[11]);
 
       if (tempAppMessage.gameID[0] == 'M') {
         tempAppMessage.gameType = 'finals_game';

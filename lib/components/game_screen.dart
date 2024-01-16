@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:darttoernooi/classes/finals_game.dart';
 import 'package:darttoernooi/classes/game.dart';
 import 'package:darttoernooi/components/active_games.dart';
 import 'package:darttoernooi/defs.dart';
@@ -17,6 +16,7 @@ import 'package:socket_io/socket_io.dart';
 import 'package:darttoernooi/names.dart';
 import 'package:darttoernooi/classes/active_game.dart';
 import 'package:darttoernooi/classes/app_message_decoder.dart';
+import 'package:another_flushbar/flushbar.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -36,6 +36,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  List<Setting> newSettings = [];
   late RawDatagramSocket udpReceiver;
   List<Poule> poules = [];
   ActiveGameList activeGameList = ActiveGameList();
@@ -43,9 +44,16 @@ class _GameScreenState extends State<GameScreen> {
   late Finals finals;
   var io = Server();
 
+  final ExpansionTileController settingsController = ExpansionTileController();
+  final ExpansionTileController playerNameController =
+      ExpansionTileController();
+  final settingsFormKey = GlobalKey<FormState>();
+  final playerNamesFormKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
+    newSettings = List.from(widget.settings);
     serverName = names[Random().nextInt(names.length)];
     RawDatagramSocket.bind(InternetAddress.anyIPv4, 8889)
         .then((RawDatagramSocket udpSocket) {
@@ -93,10 +101,14 @@ class _GameScreenState extends State<GameScreen> {
       });
 
       client.on('disconnect', (data) {
-        for (var game in activeGameList.activeGames) {
-          if (game.clientID == client.hashCode) {
-            activeGameList.removeGame(game.gameID);
+        try {
+          for (var game in activeGameList.activeGames) {
+            if (game.clientID == client.hashCode) {
+              activeGameList.removeGame(game.gameID);
+            }
           }
+        } catch (e) {
+          print("Cannot close client ${client.hashCode} game");
         }
       });
 
@@ -158,7 +170,8 @@ class _GameScreenState extends State<GameScreen> {
               player1Turn: appMessage.player1Turn,
               startingPlayer: appMessage.startingPlayer,
               gameID: appMessage.gameID,
-              clientID: client.hashCode);
+              clientID: client.hashCode,
+              legsBestOf: appMessage.legsBestOf);
 
           activeGameList.addGame(newActiveGame);
           if (appMessage.gameType == 'finals_game') {
@@ -301,23 +314,164 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void updateSettings() {
+    FocusManager.instance.primaryFocus!.unfocus();
+    if (settingsFormKey.currentState!.validate()) {
+      settingsFormKey.currentState!.save();
+
+      List<int> settings = [];
+      for (Setting setting in newSettings) {
+        settings.add(int.parse(setting.defaultValue));
+      }
+      io.emit('settingsUpdate', settings);
+
+      settingsController.collapse();
+
+      Flushbar(
+        message: "Instellingen aangepast!",
+        forwardAnimationCurve: Curves.easeIn,
+        reverseAnimationCurve: Curves.easeOut,
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        messageSize: 17,
+        icon: const Icon(Icons.check),
+        isDismissible: true,
+        backgroundColor: const Color.fromRGBO(56, 142, 60, 1),
+        flushbarStyle: FlushbarStyle.GROUNDED,
+        duration: const Duration(seconds: 5),
+      ).show(context);
+
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(serverName),
-          leading: IconButton(
-            onPressed: () {
-              io.emit("gameClose", "doei");
+        title: Text(serverName),
+        leading: IconButton(
+          onPressed: () {
+            io.emit("gameClose", "doei");
 
-              io.close().then((value) {
-                udpReceiver.close();
-                Navigator.popUntil(
-                    context, ModalRoute.withName('/start_screen'));
-              });
-            },
-            icon: const Icon(Icons.home),
-          )),
+            io.close().then((value) {
+              udpReceiver.close();
+              Navigator.popUntil(context, ModalRoute.withName('/start_screen'));
+            });
+          },
+          icon: const Icon(Icons.home),
+        ),
+      ),
+      endDrawer: Drawer(
+        backgroundColor: cardBackground,
+        child: Column(
+          children: [
+            ExpansionTile(
+                title: const Text("Legs & Scores"),
+                controller: settingsController,
+                onExpansionChanged: (value) {
+                  if (value) {
+                    if (playerNameController.isExpanded) {
+                      playerNameController.collapse();
+                    }
+                  }
+                },
+                children: [
+                  Form(
+                    key: settingsFormKey,
+                    child: Column(
+                      children: [
+                        ...newSettings.map((Setting setting) {
+                          return SizedBox(
+                            width: 150,
+                            child: TextFormField(
+                              initialValue: setting.defaultValue,
+                              onSaved: (String? value) {
+                                if (value!.isNotEmpty) {
+                                  int settingIndex = newSettings.indexWhere(
+                                      (Setting oldSetting) =>
+                                          oldSetting.name == setting.name);
+                                  newSettings[settingIndex] = Setting(
+                                      name: setting.name,
+                                      friendlyName: setting.friendlyName,
+                                      type: setting.type,
+                                      defaultValue: value);
+                                }
+                              },
+                              onFieldSubmitted: (_) => updateSettings(),
+                              validator: (value) {
+                                if (value!.isNotEmpty) {
+                                  RegExp regex = RegExp(r'([0-9]+)');
+                                  Iterable<RegExpMatch> matches =
+                                      regex.allMatches(value);
+
+                                  if (matches.isNotEmpty) {
+                                    try {
+                                      if (int.parse(value) >= 0) {
+                                        return null;
+                                      }
+                                    } catch (e) {
+                                      return "Vul een rond getal in";
+                                    }
+                                  }
+                                  return "Vul een getal in";
+                                }
+                                return "Vul een getal in";
+                              },
+                              decoration: InputDecoration(
+                                helperText: setting.friendlyName,
+                              ),
+                            ),
+                          );
+                        }),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        ElevatedButton(
+                            onPressed: () => updateSettings(),
+                            child: const Text("Opslaan")),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
+            ExpansionTile(
+                title: const Text("Spelers"),
+                controller: playerNameController,
+                onExpansionChanged: (value) {
+                  if (value) {
+                    if (settingsController.isExpanded) {
+                      settingsController.collapse();
+                    }
+                  }
+                },
+                children: [
+                  Form(
+                      key: playerNamesFormKey,
+                      child: Column(
+                        children: widget.playersNames
+                            .map((String player) => SizedBox(
+                                  width: 100,
+                                  child: TextFormField(
+                                    initialValue: player,
+                                  ),
+                                ))
+                            .toList(),
+                      )),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  ElevatedButton(
+                      onPressed: () => print("Spelers opslaan"),
+                      child: const Text("Opslaan")),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                ])
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(

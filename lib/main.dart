@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:darttoernooi/classes/custom_scroll_behavior.dart';
 
-const List<int> appVersion = [0, 1, 0];
+const List<int> appVersion = [4, 0, 0];
 
 void main() {
   runApp(const App());
@@ -28,7 +28,6 @@ class App extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/',
-      //routes: {'/start_screen': (context) => const StartScreen()},
       onGenerateRoute: (settings) {
         if (settings.name == '/start_screen') {
           return PageRouteBuilder(
@@ -73,7 +72,7 @@ class _CheckUpdateState extends State<CheckUpdate> {
           .replaceAll('V', '')
           .split('.')
           .forEach((element) => latestVersion.add(int.parse(element)));
-
+/*
       if (latestVersion[0] > appVersion[0]) {
         newVersionAvailable = true;
       } else if (latestVersion[0] == appVersion[0] &&
@@ -84,7 +83,7 @@ class _CheckUpdateState extends State<CheckUpdate> {
           latestVersion[2] > appVersion[2]) {
         newVersionAvailable = true;
       }
-
+*/
       checking = false;
 
       if (!newVersionAvailable) {
