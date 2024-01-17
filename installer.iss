@@ -6,7 +6,7 @@
 #define MyAppPublisher "HeadlessHamster SoftwareSolutions"
 #define MyAppExeName "darttoernooi.exe"
 #define MyAppAssocName MyAppName + " file"
-#define MyAppAssocExt ".dart"
+#define MyAppAssocExt ".darts"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
