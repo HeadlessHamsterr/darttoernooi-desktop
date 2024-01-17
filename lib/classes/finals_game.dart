@@ -2,7 +2,7 @@ import 'package:darttoernooi/classes/player.dart';
 import 'package:darttoernooi/classes/finals_game_types.dart';
 import 'package:flutter/material.dart';
 
-class FinalsGame {
+class FinalsGame with ChangeNotifier {
   final String gameID;
   Player player1 = Player(name: "", playerID: "");
   Player player2 = Player(name: "", playerID: "");
@@ -22,7 +22,7 @@ class FinalsGame {
       required this.changeGameState,
       required this.onGameDone});
 
-  void updateScore(Player player, int score) {
+  void updateScore(Player player, int score, {bool sendWSMessage = true}) {
     if (player.playerID == player1.playerID) {
       player1Score = score;
     } else if (player.playerID == player2.playerID) {
@@ -40,8 +40,12 @@ class FinalsGame {
         winner = player2;
       }
       changeGameState(this, true);
-      onGameDone();
+
+      if (sendWSMessage) {
+        onGameDone();
+      }
     }
+    notifyListeners();
   }
 
   void resetScore(Player player) {
@@ -60,6 +64,7 @@ class FinalsGame {
     finished = false;
     changeGameState(this, false);
     onGameDone();
+    notifyListeners();
   }
 
   List<String> convertToList() {

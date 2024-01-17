@@ -55,7 +55,9 @@ AppMessage appMessageDecoder(String messageType, String message) {
 
       tempAppMessage.legsBestOf = int.parse(messageList[11]);
 
-      if (tempAppMessage.gameID[0] == 'M') {
+      if (tempAppMessage.gameID[0] == 'h' ||
+          tempAppMessage.gameID[0] == 'q' ||
+          tempAppMessage.gameID[0] == 'f') {
         tempAppMessage.gameType = 'finals_game';
       } else {
         tempAppMessage.gameType = 'poule_game';
@@ -72,7 +74,9 @@ AppMessage appMessageDecoder(String messageType, String message) {
       tempAppMessage.player2Average = double.parse(messageList[5]);
       tempAppMessage.player2DartsThrown = int.parse(messageList[6]);
 
-      if (tempAppMessage.gameID[0] == 'M') {
+      if (tempAppMessage.gameID[0] == 'h' ||
+          tempAppMessage.gameID[0] == 'q' ||
+          tempAppMessage.gameID[0] == 'f') {
         tempAppMessage.gameType = 'finals_game';
       } else {
         tempAppMessage.gameType = 'poule_game';

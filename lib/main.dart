@@ -5,8 +5,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:darttoernooi/classes/custom_scroll_behavior.dart';
 
-const List<int> appVersion = [4, 0, 0];
-
 void main() {
   runApp(const App());
 }

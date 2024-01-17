@@ -83,7 +83,8 @@ class Poule {
     });
   }
 
-  void onGameStateChange(Game game, bool finished) async {
+  void onGameStateChange(Game game, bool finished,
+      {bool sendWSMessage = true}) async {
     int player1Index = players.players.indexWhere(
         (Player player) => player.playerID == game.player1.playerID);
 
@@ -112,7 +113,7 @@ class Poule {
         secondPlace.update(rankings.players[1]);
         onPouleDone(this);
       }
-    } else if (allGamesDone) {
+    } else if (!finished && allGamesDone) {
       allGamesDone = false;
       print("Not all games for Poule $pouleNum are done");
       winner.update(Player(playerID: "", name: ""));
@@ -120,7 +121,9 @@ class Poule {
       onPouleDone(this);
     }
 
-    onGameDone(pouleNum);
+    if (sendWSMessage) {
+      onGameDone(pouleNum);
+    }
   }
 
   void generateGames() {

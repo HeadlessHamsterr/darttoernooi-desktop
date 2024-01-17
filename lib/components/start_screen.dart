@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/new_game.dart';
+import 'package:darttoernooi/components/game_screen.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:another_flushbar/flushbar.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -51,7 +55,47 @@ class StartScreen extends StatelessWidget {
                       height: 20,
                     ),
                     ElevatedButton(
-                        onPressed: () => print("Spel laden"),
+                        onPressed: () {
+                          FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['darts']).then((result) {
+                            if (result != null) {
+                              if (result.files.single.path!
+                                  .endsWith('.darts')) {
+                                File file = File(result.files.single.path!);
+
+                                final String saveFileContent =
+                                    file.readAsStringSync();
+
+                                Navigator.pushAndRemoveUntil(
+                                    context,
+                                    PageRouteBuilder(
+                                        pageBuilder: (context, _, __) =>
+                                            GameScreen(
+                                                playersNames: const [],
+                                                settings: const [],
+                                                numberOfPoules: 0,
+                                                saveFileContents:
+                                                    saveFileContent)),
+                                    ModalRoute.withName('/start_screen'));
+                              } else {
+                                Flushbar(
+                                  message:
+                                      "Het gekozen bestandstype is niet ondersteund",
+                                  forwardAnimationCurve: Curves.easeIn,
+                                  reverseAnimationCurve: Curves.easeOut,
+                                  flushbarPosition: FlushbarPosition.BOTTOM,
+                                  messageSize: 17,
+                                  icon: const Icon(Icons.error),
+                                  isDismissible: true,
+                                  backgroundColor: flushbarRed,
+                                  flushbarStyle: FlushbarStyle.GROUNDED,
+                                  duration: const Duration(seconds: 5),
+                                ).show(context);
+                              }
+                            }
+                          });
+                        },
                         style: ButtonStyle(
                           fixedSize:
                               MaterialStateProperty.all(const Size(150, 50)),

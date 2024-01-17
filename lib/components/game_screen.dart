@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:darttoernooi/classes/finals_game.dart';
+import 'package:darttoernooi/classes/finals_game_types.dart';
 import 'package:darttoernooi/classes/game.dart';
 import 'package:darttoernooi/components/active_games.dart';
 import 'package:darttoernooi/defs.dart';
@@ -17,6 +19,8 @@ import 'package:darttoernooi/names.dart';
 import 'package:darttoernooi/classes/active_game.dart';
 import 'package:darttoernooi/classes/app_message_decoder.dart';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 const List<String> pouleNums = ["A", "B", "C", "D"];
 
@@ -25,11 +29,13 @@ class GameScreen extends StatefulWidget {
       {super.key,
       required this.playersNames,
       required this.settings,
-      required this.numberOfPoules});
+      required this.numberOfPoules,
+      required this.saveFileContents});
 
   final List<String> playersNames;
   final List<Setting> settings;
   final int numberOfPoules;
+  final String saveFileContents;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -41,61 +47,199 @@ class _GameScreenState extends State<GameScreen> {
   List<Poule> poules = [];
   ActiveGameList activeGameList = ActiveGameList();
   String serverName = "";
-  late Finals finals;
-  var io = Server();
+  Finals finals = Finals(amountOfPoules: 0, onFinalDone: () {});
+  Server socketio = Server();
 
   final ExpansionTileController settingsController = ExpansionTileController();
   final ExpansionTileController playerNameController =
       ExpansionTileController();
   final settingsFormKey = GlobalKey<FormState>();
   final playerNamesFormKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     newSettings = List.from(widget.settings);
-    serverName = names[Random().nextInt(names.length)];
-    RawDatagramSocket.bind(InternetAddress.anyIPv4, 8889)
-        .then((RawDatagramSocket udpSocket) {
-      udpReceiver = udpSocket;
-      udpSocket.broadcastEnabled = true;
-      udpSocket.listen((event) {
-        Datagram? dg = udpSocket.receive();
-        if (dg != null) {
-          String message = utf8.decode(dg.data);
-          List<String> messageList = message.split(',');
 
-          if (messageList[0] == "serverNameRequest") {
-            NetworkInterface.list().then((value) {
-              bool msgSent = false;
-              for (NetworkInterface network in value) {
-                for (var addr in network.addresses) {
-                  if (addr.address.isNotEmpty &&
-                      addr.type == InternetAddressType.IPv4) {
-                    String returnMsg = 'serverName,$serverName,${addr.address}';
-                    print('Sending: $returnMsg to ${messageList[1]}');
-                    udpSocket.send(utf8.encode(returnMsg),
-                        InternetAddress(messageList[1]), 8889);
-                    msgSent = true;
-                    break;
-                  }
-                }
-                if (msgSent) {
-                  break;
-                }
-              }
-            });
-          }
+    if (widget.saveFileContents == "") {
+      generatePoules();
+      finals = Finals(
+          amountOfPoules: widget.numberOfPoules, onFinalDone: sendFinalsInfo);
+      finals.generateFinalsGames();
+    } else {
+      try {
+        Map<String, dynamic> saveFileObject =
+            jsonDecode(widget.saveFileContents);
+
+        if (!supportedSaveGameVersions.contains(saveFileObject['version'])) {
+          Navigator.popUntil(context, ModalRoute.withName('/start_screen'));
         }
-      });
-    });
 
-    generatePoules();
-    finals = Finals(
-        amountOfPoules: widget.numberOfPoules, onFinalDone: sendFinalsInfo);
-    finals.generateFinalsGames();
+        finals = Finals(
+            amountOfPoules: saveFileObject['numPoules'],
+            onFinalDone: sendFinalsInfo);
+        finals.generateFinalsGames();
 
-    io.on('connection', (client) {
+        saveFileObject['poules'].forEach((String pouleName, dynamic data) {
+          poules.add(Poule(
+              pouleNum: pouleName.replaceAll('poule', ''),
+              onPouleDone: onPouleDone,
+              onGameDone: sendPouleInfo));
+
+          int pouleIndex = poules.indexWhere((Poule poule) =>
+              poule.pouleNum == pouleName.replaceAll('poule', ''));
+
+          Poule pouleToEdit = poules[pouleIndex];
+
+          for (Map<String, dynamic> player in data['players']) {
+            pouleToEdit.addPlayer(
+                Player(playerID: player['playerID'], name: player['name']));
+          }
+          pouleToEdit.numGames = data['games'].length;
+
+          List<Game> games = [];
+          for (Map<String, dynamic> game in data['games']) {
+            int player1Index = pouleToEdit.players.players.indexWhere(
+                (Player player) => player.playerID == game['player1']);
+            int player2Index = pouleToEdit.players.players.indexWhere(
+                (Player player) => player.playerID == game['player2']);
+
+            games.add(Game(
+                gameID: game['gameID'],
+                player1: pouleToEdit.players.players[player1Index],
+                player2: pouleToEdit.players.players[player2Index],
+                changeGameState: pouleToEdit.onGameStateChange));
+          }
+
+          pouleToEdit.games.update(games);
+        });
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          saveFileObject['poules'].forEach((String pouleName, dynamic data) {
+            late Poule pouleToEdit;
+
+            switch (pouleName) {
+              case 'pouleA':
+                pouleToEdit = poules[
+                    poules.indexWhere((Poule poule) => poule.pouleNum == 'A')];
+                break;
+              case 'pouleB':
+                pouleToEdit = poules[
+                    poules.indexWhere((Poule poule) => poule.pouleNum == 'B')];
+                break;
+              case 'pouleC':
+                pouleToEdit = poules[
+                    poules.indexWhere((Poule poule) => poule.pouleNum == 'C')];
+                break;
+              case 'pouleD':
+                pouleToEdit = poules[
+                    poules.indexWhere((Poule poule) => poule.pouleNum == 'D')];
+                break;
+            }
+            for (Map<String, dynamic> game in data['games']) {
+              int gameIndex = pouleToEdit.games.games.indexWhere(
+                  (Game pouleGame) => pouleGame.gameID == game['gameID']);
+
+              Game gameToEdit = pouleToEdit.games.games[gameIndex];
+
+              if (game['player1Score'] > -1) {
+                gameToEdit.updateScore(gameToEdit.player1, game['player1Score'],
+                    double.parse(game['player1Average'].toString()),
+                    sendWSMessage: false);
+              }
+
+              if (game['player2Score'] > -1) {
+                gameToEdit.updateScore(gameToEdit.player2, game['player2Score'],
+                    double.parse(game['player2Average'].toString()),
+                    sendWSMessage: false);
+              }
+              pouleToEdit.games.sendNotification();
+            }
+          });
+
+          for (List<FinalsGame> finalsGames in finals.games.finalsGames) {
+            for (FinalsGame finalsGame in finalsGames) {
+              int gameIndex = saveFileObject['games'].indexWhere(
+                  (dynamic game) => game['gameID'] == finalsGame.gameID);
+
+              Map<String, dynamic> savedGame =
+                  saveFileObject['games'][gameIndex];
+              finalsGame.finished = savedGame['finished'];
+
+              if (savedGame['player1Score'] > -1) {
+                finalsGame.updateScore(
+                    finalsGame.player1, savedGame['player1Score'],
+                    sendWSMessage: false);
+              }
+
+              if (savedGame['player2Score'] > -1) {
+                finalsGame.updateScore(
+                    finalsGame.player2, savedGame['player2Score'],
+                    sendWSMessage: false);
+              }
+            }
+          }
+        });
+
+        Map<String, dynamic> savedSettingsObj = saveFileObject['settings'];
+
+        List<Setting> savedSettings = [
+          Setting(
+              name: 'pouleScore',
+              friendlyName: 'Poule beginscore',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['pouleScore']),
+          Setting(
+              name: 'pouleLegs',
+              friendlyName: 'Poule best of',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['pouleLegs']),
+          Setting(
+              name: 'quartScore',
+              friendlyName: 'Kwartfinale beginscore',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['quartScore']),
+          Setting(
+              name: 'quartLegs',
+              friendlyName: 'Kwartfinale best of',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['quartLegs']),
+          Setting(
+              name: 'halfScore',
+              friendlyName: 'Halve finale beginscore',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['halfScore']),
+          Setting(
+              name: 'halfLegs',
+              friendlyName: 'Halve finale best of',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['halfLegs']),
+          Setting(
+              name: 'finalScore',
+              friendlyName: 'Finale beginscore',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['finalScore']),
+          Setting(
+              name: 'finalLegs',
+              friendlyName: 'Finale best of',
+              type: 'textfield',
+              defaultValue: savedSettingsObj['finalLegs']),
+        ];
+
+        newSettings = List.from(savedSettings);
+      } catch (e) {
+        Navigator.popUntil(context, ModalRoute.withName('/start_screen'));
+        return;
+      }
+    }
+
+    startSocketIOServer();
+    startUDPListener();
+  }
+
+  void startSocketIOServer() {
+    socketio.on('connection', (client) {
       client.on('clientGreeting', (data) {
         client.emit('fromServer', 'ok');
       });
@@ -192,8 +336,30 @@ class _GameScreenState extends State<GameScreen> {
       client.on('gamePlayed', (data) {
         AppMessage appMessage = appMessageDecoder('gamePlayed', data);
         activeGameList.removeGame(appMessage.gameID);
+        print("Game played for game type: ${appMessage.gameType}");
 
         if (appMessage.gameType == "finals_game") {
+          int gameIndex = -1;
+          int gameCounter = 0;
+          for (List<FinalsGame> finalsGames in finals.games.finalsGames) {
+            gameIndex = finalsGames.indexWhere(
+                (FinalsGame game) => game.gameID == appMessage.gameID);
+
+            if (gameIndex > -1) {
+              break;
+            }
+            gameCounter++;
+          }
+
+          if (gameIndex == -1) {
+            print("Unkown final (Final ${appMessage.gameID[0]})");
+            return;
+          }
+
+          FinalsGame gameToEdit =
+              finals.games.finalsGames[gameCounter][gameIndex];
+          gameToEdit.updateScore(gameToEdit.player1, appMessage.player1LegsWon);
+          gameToEdit.updateScore(gameToEdit.player2, appMessage.player2Score);
         } else {
           int pouleIndex = poules.indexWhere(
               (Poule poule) => poule.pouleNum == appMessage.gameID[0]);
@@ -212,8 +378,7 @@ class _GameScreenState extends State<GameScreen> {
           }
 
           Game gameToEdit = poules[pouleIndex].games.games[gameIndex];
-          print(
-              "Finishing game ${gameToEdit.gameID} with player 1: ${appMessage.player1Average} and player 2: ${appMessage.player2Average}");
+
           gameToEdit.updateScore(gameToEdit.player1, appMessage.player1LegsWon,
               appMessage.player1Average);
           gameToEdit.updateScore(gameToEdit.player2, appMessage.player2LegsWon,
@@ -234,11 +399,48 @@ class _GameScreenState extends State<GameScreen> {
         client.emit('finalsInfo', message);
       });
     });
-    io.listen(11520);
+    socketio.listen(11520);
+  }
+
+  void startUDPListener() {
+    serverName = names[Random().nextInt(names.length)];
+    RawDatagramSocket.bind(InternetAddress.anyIPv4, 8889)
+        .then((RawDatagramSocket udpSocket) {
+      udpReceiver = udpSocket;
+      udpSocket.broadcastEnabled = true;
+      udpSocket.listen((event) {
+        Datagram? dg = udpSocket.receive();
+        if (dg != null) {
+          String message = utf8.decode(dg.data);
+          List<String> messageList = message.split(',');
+
+          if (messageList[0] == "serverNameRequest") {
+            NetworkInterface.list().then((value) {
+              bool msgSent = false;
+              for (NetworkInterface network in value) {
+                for (var addr in network.addresses) {
+                  if (addr.address.isNotEmpty &&
+                      addr.type == InternetAddressType.IPv4) {
+                    String returnMsg = 'serverName,$serverName,${addr.address}';
+                    print('Sending: $returnMsg to ${messageList[1]}');
+                    udpSocket.send(utf8.encode(returnMsg),
+                        InternetAddress(messageList[1]), 8889);
+                    msgSent = true;
+                    break;
+                  }
+                }
+                if (msgSent) {
+                  break;
+                }
+              }
+            });
+          }
+        }
+      });
+    });
   }
 
   void sendPouleInfo(String pouleNum) {
-    print("Poule info request for Poule $pouleNum");
     int pouleIndex =
         poules.indexWhere((Poule poule) => poule.pouleNum == pouleNum);
 
@@ -246,7 +448,7 @@ class _GameScreenState extends State<GameScreen> {
       List msg = [
         ['No active', 'game']
       ];
-      io.emit('poule${pouleNum}Ranks', msg);
+      socketio.emit('poule${pouleNum}Ranks', msg);
     } else {
       List msg = [
         poules[pouleIndex].rankings.convertToList(),
@@ -254,7 +456,7 @@ class _GameScreenState extends State<GameScreen> {
         'poule'
       ];
 
-      io.emit('poule${pouleNum}Ranks', msg);
+      socketio.emit('poule${pouleNum}Ranks', msg);
     }
   }
 
@@ -269,7 +471,7 @@ class _GameScreenState extends State<GameScreen> {
 
     print("Sending response to finals game request:");
     print(message);
-    io.emit('finalsInfo', message);
+    socketio.emit('finalsInfo', message);
   }
 
   void onPouleDone(Poule poule) {
@@ -323,7 +525,7 @@ class _GameScreenState extends State<GameScreen> {
       for (Setting setting in newSettings) {
         settings.add(int.parse(setting.defaultValue));
       }
-      io.emit('settingsUpdate', settings);
+      socketio.emit('settingsUpdate', settings);
 
       settingsController.collapse();
 
@@ -344,22 +546,155 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void saveGame(String? path, bool quicksave) async {
+    if (quicksave) {
+      Directory directory = await getApplicationDocumentsDirectory();
+      path = directory.path;
+
+      bool saveFileExists = Directory('$path/darttoernooi-games').existsSync();
+
+      if (!saveFileExists) {
+        Directory('$path/darttoernooi-games').create();
+      }
+
+      path = '$path/darttoernooi-games';
+
+      List<FileSystemEntity> files = Directory(path).listSync();
+
+      for (FileSystemEntity file in files) {
+        File newFile = file as File;
+        if (newFile.path.contains('quicksave')) {
+          newFile.delete();
+        }
+      }
+    }
+
+    if (path == null) {
+      return;
+    }
+
+    print("Saving game to: $path");
+    print("Number of poules: ${widget.numberOfPoules}");
+
+    Map<String, dynamic> saveObject = {
+      "version": '${appVersion[0]}.${appVersion[1]}.${appVersion[2]}',
+      "numPoules": poules.length,
+      "poules": {},
+      "games": [],
+      "settings": {
+        "pouleScore": newSettings[0].defaultValue,
+        "pouleLegs": newSettings[1].defaultValue,
+        "quartScore": newSettings[2].defaultValue,
+        "quartLegs": newSettings[3].defaultValue,
+        "halfScore": newSettings[4].defaultValue,
+        "halfLegs": newSettings[5].defaultValue,
+        "finalScore": newSettings[6].defaultValue,
+        "finalLegs": newSettings[7].defaultValue,
+      }
+    };
+
+    for (Poule poule in poules) {
+      Map<String, dynamic> pouleObject = {
+        'numPlayers': poule.players.players.length,
+        'players': [],
+        'games': []
+      };
+
+      for (Player player in poule.players.players) {
+        Map<String, dynamic> playerObject = {
+          'name': player.name,
+          'points': player.legsWon,
+          'counterPoints': player.legsLost,
+          'averages': player.averages,
+          'gamesPlayed': player.gamesPlayed,
+          'gamesIDPlayed': player.gameIDsPlayed,
+          'playerID': player.playerID
+        };
+
+        pouleObject['players'].add(playerObject);
+      }
+
+      for (Game game in poule.games.games) {
+        Map<String, dynamic> gameObject = {
+          'gameID': game.gameID,
+          'player1': game.player1.playerID,
+          'player1Score': game.player1Score,
+          'player1Average': game.player1Average,
+          'player2': game.player2.playerID,
+          'player2Score': game.player2Score,
+          'player2Average': game.player2Average,
+          'finished': game.finished
+        };
+
+        pouleObject['games'].add(gameObject);
+      }
+      saveObject['poules']['poule${poule.pouleNum}'] = pouleObject;
+    }
+
+    for (List<FinalsGame> games in finals.games.finalsGames) {
+      for (FinalsGame game in games) {
+        Map<String, dynamic> gameObject = {
+          'gameID': game.gameID,
+          'player1': game.player1.playerID,
+          'player1Score': game.player1Score,
+          'player2': game.player2.playerID,
+          'player2Score': game.player2Score,
+          'winner': game.winner.playerID,
+          'finished': game.finished,
+          'gameType': game.gameType.toString()
+        };
+
+        saveObject['games'].add(gameObject);
+      }
+    }
+
+    String saveObjString = jsonEncode(saveObject);
+    String fileName = path;
+
+    if (quicksave) {
+      fileName = '$fileName\\quicksave.darts';
+    }
+    File saveFile = File(fileName);
+
+    saveFile.create().then((value) => value.writeAsStringSync(saveObjString));
+  }
+
   @override
   Widget build(context) {
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text(serverName),
         leading: IconButton(
           onPressed: () {
-            io.emit("gameClose", "doei");
+            socketio.emit("gameClose", "doei");
 
-            io.close().then((value) {
+            socketio.close().then((value) {
               udpReceiver.close();
               Navigator.popUntil(context, ModalRoute.withName('/start_screen'));
             });
           },
           icon: const Icon(Icons.home),
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                FilePicker.platform
+                    .saveFile(
+                        dialogTitle: 'Wedstrijd opslaan',
+                        allowedExtensions: ['darts'],
+                        fileName: 'savegame.darts')
+                    .then((value) {
+                  if (value != null) {
+                    saveGame(value, false);
+                  }
+                });
+              },
+              icon: const Icon(Icons.save)),
+          IconButton(
+              onPressed: () => scaffoldKey.currentState!.openEndDrawer(),
+              icon: const Icon(Icons.menu))
+        ],
       ),
       endDrawer: Drawer(
         backgroundColor: cardBackground,
@@ -406,7 +741,12 @@ class _GameScreenState extends State<GameScreen> {
 
                                   if (matches.isNotEmpty) {
                                     try {
-                                      if (int.parse(value) >= 0) {
+                                      int newSetting = int.parse(value);
+                                      if (newSetting >= 0) {
+                                        if (setting.name.contains("Legs") &&
+                                            newSetting % 2 == 0) {
+                                          return "Alleen oneven getallen";
+                                        }
                                         return null;
                                       }
                                     } catch (e) {

@@ -88,7 +88,6 @@ class Finals {
     List<List<FinalsGame>> newGames = [];
 
     if (amountOfPoules > 2) {
-      print("Generating quarts...");
       List<FinalsGame> quarts = [
         FinalsGame(
             gameID: "quart1",
@@ -127,7 +126,6 @@ class Finals {
     }
 
     if (amountOfPoules > 1) {
-      print("Generating semi's...");
       List<FinalsGame> halfs = [];
       halfs.add(FinalsGame(
           gameID: "half1",
@@ -148,7 +146,6 @@ class Finals {
       }
       newGames.add(halfs);
 
-      print("Generating finals...");
       newGames.add([
         FinalsGame(
             gameID: "finals",
@@ -160,7 +157,6 @@ class Finals {
       ]);
     }
 
-    print("Generating winner...");
     newGames.add([
       FinalsGame(
           gameID: "winner",
@@ -179,159 +175,6 @@ class Finals {
     }
 
     gameFormat = getFinalsGameFormat(amountOfPoules);
-/*
-    if (amountOfPoules == 1) {
-      games.update([
-        [
-          FinalsGame(
-              gameID: "winner",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.winner,
-              changeGameState: _onGameChangeState)
-        ]
-      ]);
-    } else if (amountOfPoules == 2) {
-      games.update([
-        [
-          FinalsGame(
-              gameID: "half1",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.half,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "half2",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.half,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "finals",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.finals,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "winner",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.winner,
-              changeGameState: _onGameChangeState)
-        ]
-      ]);
-    } else if (amountOfPoules == 3) {
-      games.update([
-        [
-          FinalsGame(
-              gameID: "quart1",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "quart2",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "quart3",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "half1",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.half,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "finals",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.finals,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "winner",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.winner,
-              changeGameState: _onGameChangeState)
-        ]
-      ]);
-    } else if (amountOfPoules == 4) {
-      games.update([
-        [
-          FinalsGame(
-              gameID: "quart1",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "quart2",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "quart3",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "quart4",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.quart,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "half1",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.half,
-              changeGameState: _onGameChangeState),
-          FinalsGame(
-              gameID: "half2",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.half,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "finals",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.finals,
-              changeGameState: _onGameChangeState),
-        ],
-        [
-          FinalsGame(
-              gameID: "winner",
-              player1: Player(name: "", playerID: ""),
-              player2: Player(name: "", playerID: ""),
-              gameType: FinalsGameType.winner,
-              changeGameState: _onGameChangeState)
-        ]
-      ]);
-    }
-    */
   }
 
   void updateWinners(Poule poule) {

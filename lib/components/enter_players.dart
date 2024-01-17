@@ -45,6 +45,7 @@ class _EnterPlayersState extends State<EnterPlayers> {
                     playersNames: players,
                     settings: widget.settings,
                     numberOfPoules: widget.numberOfPoules,
+                    saveFileContents: "",
                   )),
           ModalRoute.withName('/start_screen'));
     }

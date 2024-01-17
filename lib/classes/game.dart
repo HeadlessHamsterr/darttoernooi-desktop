@@ -5,7 +5,7 @@ class Game with ChangeNotifier {
   final String gameID;
   final Player player1;
   final Player player2;
-  final Function(Game, bool) changeGameState;
+  final Function(Game, bool, {bool sendWSMessage}) changeGameState;
   int player1Score = -1;
   int player2Score = -1;
   double player1Average = 0.0;
@@ -19,7 +19,9 @@ class Game with ChangeNotifier {
       required this.player2,
       required this.changeGameState});
 
-  void updateScore(Player player, int score, double average) {
+  void updateScore(Player player, int score, double average,
+      {bool sendWSMessage = true}) {
+    print("Finishing game $gameID with ${player.name}: $average");
     if (player.playerID == player1.playerID) {
       player1Score = score;
       player1Average = average;
@@ -49,7 +51,7 @@ class Game with ChangeNotifier {
     if (player1Score > -1 && player2Score > -1) {
       print("$gameID done!");
       finished = true;
-      changeGameState(this, true);
+      changeGameState(this, true, sendWSMessage: sendWSMessage);
     }
     notifyListeners();
   }
