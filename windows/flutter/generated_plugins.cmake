@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_window_close
-  just_audio_windows
   permission_handler_windows
 )
 

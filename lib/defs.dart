@@ -4,13 +4,14 @@ const Color cardOutlineColor = Color.fromARGB(95, 10, 10, 10);
 const Color cardBackground = Color.fromRGBO(36, 36, 36, 1);
 const Color flushbarGreen = Color.fromRGBO(56, 142, 60, 1);
 const Color flushbarRed = Color.fromRGBO(211, 47, 47, 1);
-const List<int> appVersion = [4, 3, 0];
+const List<int> appVersion = [4, 3, 1];
 
 const List<String> supportedSaveGameVersions = [
   "4.0.0",
   "4.1.0",
   "4.2.0",
-  "4.3.0"
+  "4.3.0",
+  "4.3.1"
 ];
 const List<String> specialSounds = ["006", "020", "023", "042", "063", "064"];
 
