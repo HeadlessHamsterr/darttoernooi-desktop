@@ -750,7 +750,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void playAudio(String score) {
     try {
-      if (playSound) {
+      if (playSound && score != '-1') {
         score = score.padLeft(3, '0');
         score = '$score.mp3';
 

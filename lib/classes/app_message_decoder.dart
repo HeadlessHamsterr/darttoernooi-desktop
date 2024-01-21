@@ -38,10 +38,6 @@ AppMessage appMessageDecoder(String messageType, String message) {
         tempAppMessage.startingPlayer = "player2";
       }
 
-      print(tempAppMessage.startingPlayer);
-
-      tempAppMessage.thrownScore = messageList[12];
-
       tempAppMessage.player1Score = int.parse(messageList[1]);
       tempAppMessage.player1LegsWon = int.parse(messageList[2]);
       tempAppMessage.player1DartsThrown = int.parse(messageList[3]);
@@ -62,6 +58,13 @@ AppMessage appMessageDecoder(String messageType, String message) {
       } else {
         tempAppMessage.gameType = 'poule_game';
       }
+
+      if (messageList.length == 13) {
+        tempAppMessage.thrownScore = messageList[12];
+      } else {
+        tempAppMessage.thrownScore = '-1';
+      }
+
       break;
     case "gamePlayed":
       tempAppMessage.gameID = messageList[0];
