@@ -374,6 +374,8 @@ class _GameScreenState extends State<GameScreen> {
         } else {
           activeGameList.activeGames[activeGameIndex]
               .updatePlayerSettings(appMessage);
+
+          playAudio(appMessage.thrownScore);
         }
       });
 
@@ -744,6 +746,30 @@ class _GameScreenState extends State<GameScreen> {
     });
 
     return c.future;
+  }
+
+  void playAudio(String score) {
+    try {
+      if (playSound) {
+        score = score.padLeft(3, '0');
+        score = '$score.mp3';
+
+        String url = 'https://darttoernooi.rietdijk.dev';
+
+        if (playSpecialSounds) {
+          url = '$url/special_sounds';
+        } else {
+          url = '$url/normal_sounds';
+        }
+
+        url = '$url/$score';
+
+        print("Playing sound from $url");
+        Process.run('ffplay', ['-autoexit', '-nodisp', url]);
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
