@@ -375,7 +375,7 @@ class _GameScreenState extends State<GameScreen> {
           activeGameList.activeGames[activeGameIndex]
               .updatePlayerSettings(appMessage);
 
-          playAudio(appMessage.thrownScore);
+          playAudio(appMessage.thrownScore, appMessage.gameID);
         }
       });
 
@@ -748,9 +748,11 @@ class _GameScreenState extends State<GameScreen> {
     return c.future;
   }
 
-  void playAudio(String score) {
+  void playAudio(String score, String gameID) {
     try {
-      if (playSound && score != '-1') {
+      if (playSound &&
+          score != '-1' &&
+          (widget.numberOfPoules == 1 || gameID[0] == 'f')) {
         score = score.padLeft(3, '0');
         score = '$score.mp3';
 
@@ -816,6 +818,13 @@ class _GameScreenState extends State<GameScreen> {
           icon: const Icon(Icons.home),
         ),
         actions: [
+          IconButton(
+              onPressed: () => setState(() {
+                    playSound = !playSound;
+                  }),
+              icon: playSound
+                  ? const Icon(Icons.volume_up)
+                  : const Icon(Icons.volume_off)),
           IconButton(
               onPressed: () {
                 FilePicker.platform
