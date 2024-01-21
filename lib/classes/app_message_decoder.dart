@@ -16,7 +16,7 @@ class AppMessage {
   double player2Average = 0;
   int player2DartsThrown = 0;
 
-  int thrownScore = 0;
+  String thrownScore = "0";
 
   int legsBestOf = 0;
 }
@@ -40,7 +40,7 @@ AppMessage appMessageDecoder(String messageType, String message) {
 
       print(tempAppMessage.startingPlayer);
 
-      //tempAppMessage.thrownScore = int.parse(messageList[11]);
+      tempAppMessage.thrownScore = messageList[12];
 
       tempAppMessage.player1Score = int.parse(messageList[1]);
       tempAppMessage.player1LegsWon = int.parse(messageList[2]);

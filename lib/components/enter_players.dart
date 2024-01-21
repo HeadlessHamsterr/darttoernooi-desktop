@@ -4,11 +4,12 @@ import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/game_screen.dart';
 
 class EnterPlayers extends StatefulWidget {
-  const EnterPlayers(
-      {super.key,
-      required this.numberOfPlayers,
-      required this.numberOfPoules,
-      required this.settings});
+  const EnterPlayers({
+    super.key,
+    required this.numberOfPlayers,
+    required this.numberOfPoules,
+    required this.settings,
+  });
   final int numberOfPlayers;
   final int numberOfPoules;
   final List<Setting> settings;

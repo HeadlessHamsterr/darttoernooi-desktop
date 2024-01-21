@@ -7,6 +7,7 @@ const Color flushbarRed = Color.fromRGBO(211, 47, 47, 1);
 const List<int> appVersion = [4, 2, 0];
 
 const List<String> supportedSaveGameVersions = ["4.0.0", "4.1.0", "4.2.0"];
+const List<String> specialSounds = ["006", "020", "023", "042", "063", "064"];
 
 List<List<int>> getGameFormat(int amountOfPlayers) {
   List<List<int>> gameFormat = [[]];

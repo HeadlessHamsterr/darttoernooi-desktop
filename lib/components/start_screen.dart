@@ -1,3 +1,4 @@
+import 'package:darttoernooi/main.dart';
 import 'package:flutter/material.dart';
 import 'package:darttoernooi/defs.dart';
 import 'package:darttoernooi/components/new_game.dart';
