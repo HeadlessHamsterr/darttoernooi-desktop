@@ -53,6 +53,7 @@ class _GameScreenState extends State<GameScreen> {
   bool playSpecialSounds = true;
   bool playSound = true;
   bool alertShowing = false;
+  int volumeSliderValue = 100;
 
   final ExpansionTileController settingsController = ExpansionTileController();
   final ExpansionTileController playerNameController =
@@ -767,7 +768,15 @@ class _GameScreenState extends State<GameScreen> {
         url = '$url/$score';
 
         print("Playing sound from $url");
-        Process.run('ffplay', ['-autoexit', '-nodisp', url]);
+        print("Volume: ${volumeSliderValue / 100}");
+        Process.run('ffplay -af "volume=${volumeSliderValue / 100}"', [
+          '-autoexit',
+          '-nodisp',
+          url,
+        ]);
+      } else {
+        print("Score: $score");
+        print("GameID: ${gameID[0]}");
       }
     } catch (e) {
       print(e);
@@ -956,7 +965,24 @@ class _GameScreenState extends State<GameScreen> {
                   const SizedBox(
                     height: 15,
                   ),
-                ])
+                ]),
+            Column(
+              children: [
+                const Text(
+                  "Calls volume:",
+                  style: TextStyle(fontSize: 17),
+                ),
+                Slider(
+                    value: double.parse(volumeSliderValue.toString()),
+                    max: 100,
+                    divisions: 100,
+                    label: volumeSliderValue.round().toString(),
+                    onChanged: (value) {
+                      volumeSliderValue = value.round();
+                      setState(() {});
+                    }),
+              ],
+            ),
           ],
         ),
       ),
