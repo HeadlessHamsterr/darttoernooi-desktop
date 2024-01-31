@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Darttoernooi"
-#define MyAppVersion "4.4.0"
+#define MyAppVersion "4.4.1"
 #define MyAppPublisher "HeadlessHamster SoftwareSolutions"
 #define MyAppExeName "darttoernooi.exe"
 #define MyAppAssocName MyAppName + " file"
@@ -23,7 +23,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir=C:\Users\Joost\Documents\darttoernooi\build\windows\x64\runner\Release
-OutputBaseFilename=darttoernooi_setup
+OutputBaseFilename=darttoernooi_setup_{#MyAppVersion}
 SetupIconFile=C:\Users\Joost\Documents\darttoernooi\assets\appIcon.ico
 Compression=lzma
 SolidCompression=yes

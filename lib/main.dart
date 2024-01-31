@@ -64,6 +64,7 @@ class _CheckUpdateState extends State<CheckUpdate> {
   double downloadProgress = 0;
   String downloadError = "";
   String filepath = "";
+  String newVersion = "";
 
   @override
   void initState() {
@@ -74,6 +75,8 @@ class _CheckUpdateState extends State<CheckUpdate> {
         .then((value) {
       final body = json.decode(value.body);
       String tagName = body['tag_name'];
+      print(tagName);
+      newVersion = tagName.replaceAll('V', '');
       List<int> latestVersion = [];
       tagName
           .replaceAll('V', '')
@@ -175,11 +178,12 @@ class _CheckUpdateState extends State<CheckUpdate> {
                 padding: const EdgeInsets.all(10),
                 child: SizedBox(
                     width: 320,
-                    height: 120,
+                    height: 130,
                     child: checking
                         ? checkingUpdate()
                         : newVersionAvailable && !downloading && !downloadDone
-                            ? updateAvailable(context, downloadUpdate)
+                            ? updateAvailable(
+                                context, downloadUpdate, newVersion)
                             : downloading && !downloadDone
                                 ? downloadingFile(downloadProgress)
                                 : downloadDone
@@ -212,13 +216,19 @@ Widget checkingUpdate() {
   );
 }
 
-Widget updateAvailable(BuildContext context, Function downloadUpdate) {
+Widget updateAvailable(
+    BuildContext context, Function downloadUpdate, String newVersion) {
   return Column(
     children: [
       const Text(
         "Update beschikbaar",
         style: TextStyle(fontSize: 20),
       ),
+      const SizedBox(
+        height: 2,
+      ),
+      Text(
+          '(Huidige versie: ${appVersion[0]}.${appVersion[1]}.${appVersion[2]}, nieuwe versie: $newVersion)'),
       const SizedBox(
         height: 5,
       ),
