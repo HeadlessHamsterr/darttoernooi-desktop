@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Darttoernooi"
-#define MyAppVersion "4.2.0"
+#define MyAppVersion "4.4.2"
 #define MyAppPublisher "HeadlessHamster SoftwareSolutions"
 #define MyAppExeName "darttoernooi.exe"
 #define MyAppAssocName MyAppName + " file"
