@@ -542,7 +542,14 @@ class _GameScreenState extends State<GameScreen> {
 
     widget.playersNames.shuffle();
 
-    for (int i = 0; i < widget.playersNames.length; i++) {
+    int numAutoAssignPlayers = playersPerPouleAbs * widget.numberOfPoules;
+    int numOverflowPlayers = widget.playersNames.length - numAutoAssignPlayers;
+
+    print(
+        "Number of poules: ${widget.numberOfPoules} | Auto-assign players: ${numAutoAssignPlayers} | Overflow players: ${numOverflowPlayers}");
+
+    for (int i = 0; i < numAutoAssignPlayers; i++) {
+      print("Assigning player $i");
       if (i < playersPerPouleAbs) {
         poules[0].addPlayer(
             Player(playerID: const Uuid().v4(), name: widget.playersNames[i]));
@@ -557,6 +564,19 @@ class _GameScreenState extends State<GameScreen> {
           i < (4 * playersPerPouleAbs)) {
         poules[3].addPlayer(
             Player(playerID: const Uuid().v4(), name: widget.playersNames[i]));
+      }
+    }
+
+    int pouleToEdit = 0;
+    for (int i = 0; i < numOverflowPlayers; i++) {
+      poules[pouleToEdit].addPlayer(Player(
+          playerID: const Uuid().v4(),
+          name: widget.playersNames[numAutoAssignPlayers + i]));
+
+      if (pouleToEdit == widget.numberOfPoules - 1) {
+        pouleToEdit = 0;
+      } else {
+        pouleToEdit++;
       }
     }
 
@@ -999,18 +1019,19 @@ class _GameScreenState extends State<GameScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: poules.map(
-                    (Poule poule) {
-                      return Row(
-                        children: [
-                          PouleWrapper(poule: poule),
-                          const SizedBox(
-                            width: 10,
-                          )
-                        ],
-                      );
-                    },
-                  ).toList()),
+                        (Poule poule) {
+                          return Row(
+                            children: [
+                              PouleWrapper(poule: poule),
+                              const SizedBox(
+                                width: 10,
+                              )
+                            ],
+                          );
+                        },
+                      ).toList()),
                 ],
               )),
               Column(
