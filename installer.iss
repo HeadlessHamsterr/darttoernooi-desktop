@@ -22,9 +22,9 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\Joost\Documents\darttoernooi\build\windows\x64\runner\Release
+OutputDir=.\build\windows\x64\runner\Release
 OutputBaseFilename=darttoernooi_setup_{#MyAppVersion}
-SetupIconFile=C:\Users\Joost\Documents\darttoernooi\assets\appIcon.ico
+SetupIconFile=.\assets\appIcon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -37,9 +37,9 @@ Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Joost\Documents\darttoernooi\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Joost\Documents\darttoernooi\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Joost\Documents\darttoernooi\ffplay\ffplay.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not FileExists(ExpandConstant('{app}\ffplay.exe'))
+Source: ".\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\ffplay\ffplay.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not FileExists(ExpandConstant('{app}\ffplay.exe'))
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
